@@ -1,0 +1,17 @@
+# Vs Cache
+.vs/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+*.user
+*.aps
+*.suo
+*.db
+*.opendb
+
+# Release Files
+*.exe
+*.pdb
+*.ilk
+*.ilk
