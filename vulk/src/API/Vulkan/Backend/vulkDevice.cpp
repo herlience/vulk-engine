@@ -7,6 +7,11 @@
 #include <string>
 
 namespace vulkDevice {
+    VkPhysicalDevice vulkPhysicalDevice = VK_NULL_HANDLE;
+    VkDevice vulkLogicalDevice = VK_NULL_HANDLE;
+    VkQueue vulkGraphicsQueue = VK_NULL_HANDLE;
+    VkQueue vulkPresentQueue = VK_NULL_HANDLE;
+
 	void create(VkInstance instance, VkSurfaceKHR surface) {
 		pickPhysicalDevice(instance, surface);
 		createLogicalDevice(surface);

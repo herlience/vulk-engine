@@ -3,8 +3,6 @@
 #include <vector>
 
 namespace vulkInstance {
-	inline VkInstance vulkInstance = VK_NULL_HANDLE;
-	inline VkDebugUtilsMessengerEXT vulkDebugMessenger = VK_NULL_HANDLE;
 
 	void create();
 	void clean();

@@ -4,10 +4,6 @@
 #include <optional>
 
 namespace vulkDevice {
-    inline VkPhysicalDevice vulkPhysicalDevice = VK_NULL_HANDLE;
-    inline VkDevice vulkLogicalDevice = VK_NULL_HANDLE;
-    inline VkQueue vulkGraphicsQueue = VK_NULL_HANDLE;
-    inline VkQueue vulkPresentQueue = VK_NULL_HANDLE;
 
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphicsFamily;

@@ -8,13 +8,6 @@
 
 
 namespace vulkSwapchain {
-    inline VkSwapchainKHR vulkSwapchain = VK_NULL_HANDLE;
-    inline VkFormat vulkSwapchainImageFormat;
-    inline VkExtent2D vulkSwapchainExtent;
-
-    inline std::vector<VkImage> swapchainImages;
-    inline std::vector<VkImageView> swapchainImageViews;
-
     struct SwapChainSupportDetails {
         VkSurfaceCapabilitiesKHR capabilities;
         std::vector<VkSurfaceFormatKHR> formats;

@@ -13,6 +13,11 @@
 #include <limits>
 
 namespace vulkSwapchain {
+    VkSwapchainKHR vulkSwapchain = VK_NULL_HANDLE;
+    VkFormat vulkSwapchainImageFormat;
+    VkExtent2D vulkSwapchainExtent;
+    std::vector<VkImage> swapchainImages;
+    std::vector<VkImageView> swapchainImageViews;
 
     void create(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice logicalDevice, GLFWwindow* window) {
         VkSurfaceKHR surface = vulkanWindow::getSurface();

@@ -15,6 +15,9 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 }
 
 namespace vulkInstance {
+    VkInstance vulkInstance = VK_NULL_HANDLE;
+    VkDebugUtilsMessengerEXT vulkDebugMessenger = VK_NULL_HANDLE;
+
     void create() {
         if (enableValidationLayers && !checkValidationLayerSupport()) {
             std::cerr << "Requested Validation Layers but not supported!" << std::endl;
