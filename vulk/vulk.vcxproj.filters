@@ -14,4 +14,42 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\API\Vulkan\Backend\vulkWindow.h">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
+    <ClInclude Include="src\API\Vulkan\Backend\vulkInstance.h">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
+    <ClInclude Include="src\API\Vulkan\Backend\vulkDevice.h">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
+    <ClInclude Include="src\API\Vulkan\Backend\vulkSwapchain.h">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\API\Vulkan\Backend\vulkWindow.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
+    <ClCompile Include="src\API\Vulkan\Backend\vulkInstance.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
+    <ClCompile Include="src\API\Vulkan\Backend\vulkDevice.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
+    <ClCompile Include="src\API\Vulkan\Backend\vulkSwapchain.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
+    <ClCompile Include="src\API\Vulkan\Backend\main.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\Shaders\shader.vert" />
+    <None Include="res\Shaders\shader.frag" />
+    <None Include="res\Shaders\compile.bat">
+      <Filter>Kaynak Dosyalar</Filter>
+    </None>
+  </ItemGroup>
 </Project>
