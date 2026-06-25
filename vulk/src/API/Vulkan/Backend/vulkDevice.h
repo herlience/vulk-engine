@@ -14,19 +14,17 @@ namespace vulkDevice {
         }
     };
 
-    void create(VkInstance instance, VkSurfaceKHR surface);
-    void clean();
+    void clean(VkDevice vulkLogicalDevice, VkPhysicalDevice vulkPhysicalDevice);
    
-    void pickPhysicalDevice(VkInstance instance, VkSurfaceKHR surface);
-    void createLogicalDevice(VkSurfaceKHR surface);
+    VkPhysicalDevice pickPhysicalDevice(VkInstance instance, VkSurfaceKHR surface);
+    VkDevice createLogicalDevice(VkSurfaceKHR surface, VkPhysicalDevice vulkPhysicalDevice, QueueFamilyIndices indices);
+
+    VkQueue createGraphicsQueue(VkDevice vulkLogicalDevice, QueueFamilyIndices indices);
+    VkQueue createPresentQueue(VkDevice vulkLogicalDevice, QueueFamilyIndices indices);
+
     bool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface);
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
     bool checkDeviceExtensionSupport(VkPhysicalDevice device);
-
-    VkPhysicalDevice getPhysicalDevice();
-    VkDevice getLogicalDevice();
-    VkQueue getGraphicsQueue();
-    VkQueue getPresentQueue();
 
     const std::vector<const char*> deviceExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME

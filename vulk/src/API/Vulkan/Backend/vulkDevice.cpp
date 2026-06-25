@@ -7,17 +7,9 @@
 #include <string>
 
 namespace vulkDevice {
-    VkPhysicalDevice vulkPhysicalDevice = VK_NULL_HANDLE;
-    VkDevice vulkLogicalDevice = VK_NULL_HANDLE;
-    VkQueue vulkGraphicsQueue = VK_NULL_HANDLE;
-    VkQueue vulkPresentQueue = VK_NULL_HANDLE;
 
-	void create(VkInstance instance, VkSurfaceKHR surface) {
-		pickPhysicalDevice(instance, surface);
-		createLogicalDevice(surface);
-	}
-
-    void pickPhysicalDevice(VkInstance instance, VkSurfaceKHR surface) {
+    VkPhysicalDevice pickPhysicalDevice(VkInstance instance, VkSurfaceKHR surface) {
+        VkPhysicalDevice vulkPhysicalDevice = VK_NULL_HANDLE;
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
@@ -38,10 +30,12 @@ namespace vulkDevice {
         if (vulkPhysicalDevice == VK_NULL_HANDLE) {
             throw std::runtime_error("We have a problem for GPU suitability!");
         }
+
+        return vulkPhysicalDevice;
     }
 
-    void createLogicalDevice(VkSurfaceKHR surface) {
-        QueueFamilyIndices indices = findQueueFamilies(vulkPhysicalDevice, surface);
+    VkDevice createLogicalDevice(VkSurfaceKHR surface, VkPhysicalDevice vulkPhysicalDevice, QueueFamilyIndices indices) {
+        VkDevice vulkLogicalDevice = VK_NULL_HANDLE;
 
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
         std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
@@ -73,9 +67,23 @@ namespace vulkDevice {
             throw std::runtime_error("We have a problem for creating logical device!");
         }
 
-        vkGetDeviceQueue(vulkLogicalDevice, indices.graphicsFamily.value(), 0, &vulkGraphicsQueue);
-        vkGetDeviceQueue(vulkLogicalDevice, indices.presentFamily.value(), 0, &vulkPresentQueue);
+        return vulkLogicalDevice;
     }
+
+    VkQueue createGraphicsQueue(VkDevice vulkLogicalDevice, QueueFamilyIndices indices) {
+        VkQueue vulkGraphicsQueue = VK_NULL_HANDLE;
+        vkGetDeviceQueue(vulkLogicalDevice, indices.graphicsFamily.value(), 0, &vulkGraphicsQueue);
+
+        return vulkGraphicsQueue;
+    }
+
+    VkQueue createPresentQueue(VkDevice vulkLogicalDevice, QueueFamilyIndices indices) {
+        VkQueue vulkPresentQueue = VK_NULL_HANDLE;
+        vkGetDeviceQueue(vulkLogicalDevice, indices.presentFamily.value(), 0, &vulkPresentQueue);
+
+        return vulkPresentQueue;
+    }
+
 
     bool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface) {
         QueueFamilyIndices indices = findQueueFamilies(device, surface);
@@ -131,16 +139,11 @@ namespace vulkDevice {
         return requiredExtensions.empty();
     }
 
-    void clean() {
+    void clean(VkDevice vulkLogicalDevice, VkPhysicalDevice vulkPhysicalDevice) {
         if (vulkLogicalDevice != VK_NULL_HANDLE) {
             vkDestroyDevice(vulkLogicalDevice, nullptr);
             vulkLogicalDevice = VK_NULL_HANDLE;
         }
         vulkPhysicalDevice = VK_NULL_HANDLE;
     }
-
-    VkPhysicalDevice getPhysicalDevice() { return vulkPhysicalDevice; }
-    VkDevice getLogicalDevice() { return vulkLogicalDevice; }
-    VkQueue getGraphicsQueue() { return vulkGraphicsQueue; }
-    VkQueue getPresentQueue() { return vulkPresentQueue; }
 }

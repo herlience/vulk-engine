@@ -14,17 +14,17 @@ namespace vulkSwapchain {
         std::vector<VkPresentModeKHR> presentModes;
     };
 
-    void create(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice logicalDevice, GLFWwindow* window);
-    void createImageViews(VkDevice logicalDevice);
-    void clean(VkDevice logicalDevice);
+    VkSwapchainKHR create(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice logicalDevice, GLFWwindow* window, VkSurfaceKHR surface);
+    std::vector<VkImageView> createImageViews(VkDevice logicalDevice);
+    void clean(VkDevice logicalDevice, VkSwapchainKHR vulkSwapchain, std::vector<VkImageView>& swapchainImageViews);
 
     SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* window);
 
-    VkSwapchainKHR getSwapchain();
-    VkFormat getSwapchainImageFormat();
-    VkExtent2D getSwapchainExtent();
-    const std::vector<VkImageView>& getSwapchainImageViews();
+
+    /*VkFormat getSwapchainImageFormat();
+    VkExtent2D getSwapchainExtent();*/
+
 }

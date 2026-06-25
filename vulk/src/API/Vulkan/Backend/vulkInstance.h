@@ -4,13 +4,13 @@
 
 namespace vulkInstance {
 
-	void create();
-	void clean();
+	VkInstance create();
+	VkDebugUtilsMessengerEXT createDebugMessenger(VkInstance vulkInstance);
+	void clean(VkInstance vulkInstance, VkDebugUtilsMessengerEXT vulkDebugMessenger);
 
 	std::vector<const char*> getRequiredExtensions();
 	bool checkValidationLayerSupport();
 
-	VkInstance getInstance();
 
 	// validation settings
 #ifdef NDEBUG

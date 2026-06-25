@@ -13,14 +13,14 @@
 #include <limits>
 
 namespace vulkSwapchain {
-    VkSwapchainKHR vulkSwapchain = VK_NULL_HANDLE;
+    
     VkFormat vulkSwapchainImageFormat;
     VkExtent2D vulkSwapchainExtent;
     std::vector<VkImage> swapchainImages;
-    std::vector<VkImageView> swapchainImageViews;
+    
 
-    void create(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice logicalDevice, GLFWwindow* window) {
-        VkSurfaceKHR surface = vulkanWindow::getSurface();
+    VkSwapchainKHR create(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice logicalDevice, GLFWwindow* window, VkSurfaceKHR surface) {
+        VkSwapchainKHR vulkSwapchain = VK_NULL_HANDLE;
 
         SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice, surface);
 
@@ -75,7 +75,9 @@ namespace vulkSwapchain {
         vulkSwapchainExtent = extent;
     }
 
-    void createImageViews(VkDevice logicalDevice) {
+    std::vector<VkImageView> createImageViews(VkDevice logicalDevice) {
+        std::vector<VkImageView> swapchainImageViews;
+
         swapchainImageViews.resize(swapchainImages.size());
 
         for (size_t i = 0; i < swapchainImages.size(); i++) {
@@ -100,9 +102,11 @@ namespace vulkSwapchain {
                 throw std::runtime_error("We have a problem on Swapchain Image View!");
             }
         }
+
+        return swapchainImageViews;
     }
 
-    void clean(VkDevice logicalDevice) {
+    void clean(VkDevice logicalDevice, VkSwapchainKHR vulkSwapchain, std::vector<VkImageView>& swapchainImageViews) {
         for (auto imageView : swapchainImageViews) {
             vkDestroyImageView(logicalDevice, imageView, nullptr);
         }
@@ -174,8 +178,6 @@ namespace vulkSwapchain {
         }
     }
 
-    VkSwapchainKHR getSwapchain() { return vulkSwapchain; }
-    VkFormat getSwapchainImageFormat() { return vulkSwapchainImageFormat; }
-    VkExtent2D getSwapchainExtent() { return vulkSwapchainExtent; }
-    const std::vector<VkImageView>& getSwapchainImageViews() { return swapchainImageViews; }
+   /* VkFormat getSwapchainImageFormat() { return vulkSwapchainImageFormat; }
+    VkExtent2D getSwapchainExtent() { return vulkSwapchainExtent; }*/
 }

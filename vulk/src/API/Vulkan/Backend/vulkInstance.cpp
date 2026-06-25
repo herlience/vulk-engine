@@ -15,10 +15,10 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 }
 
 namespace vulkInstance {
-    VkInstance vulkInstance = VK_NULL_HANDLE;
-    VkDebugUtilsMessengerEXT vulkDebugMessenger = VK_NULL_HANDLE;
 
-    void create() {
+    VkInstance create() {
+        VkInstance vulkInstance = VK_NULL_HANDLE;
+
         if (enableValidationLayers && !checkValidationLayerSupport()) {
             std::cerr << "Requested Validation Layers but not supported!" << std::endl;
             return;
@@ -60,8 +60,14 @@ namespace vulkInstance {
             std::cerr << "We have a problem on instance!" << std::endl;
             return;
         }
+        
 
-        // Debug Messenger Kurulumu
+        return vulkInstance;
+    }
+
+    VkDebugUtilsMessengerEXT createDebugMessenger(VkInstance vulkInstance) {
+        VkDebugUtilsMessengerEXT vulkDebugMessenger = VK_NULL_HANDLE;
+
         if (enableValidationLayers) {
             VkDebugUtilsMessengerCreateInfoEXT messengerInfo{};
             messengerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -106,7 +112,7 @@ namespace vulkInstance {
         return true;
     }
 
-    void clean() {
+    void clean(VkInstance vulkInstance, VkDebugUtilsMessengerEXT vulkDebugMessenger) {
         if (enableValidationLayers && vulkDebugMessenger != VK_NULL_HANDLE) {
             auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(vulkInstance, "vkDestroyDebugUtilsMessengerEXT");
             if (func != nullptr) {
@@ -117,6 +123,4 @@ namespace vulkInstance {
             vkDestroyInstance(vulkInstance, nullptr);
         }
     }
-
-    VkInstance getInstance() { return vulkInstance; }
 }

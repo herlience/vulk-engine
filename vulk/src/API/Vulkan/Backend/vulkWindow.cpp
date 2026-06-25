@@ -7,33 +7,28 @@
 #include "vulkInstance.h"
 
 namespace vulkanWindow {
-	bool Init() {
-		glfwInit();
+
+	void Destroy(GLFWwindow* vulk_window) {
+		glfwDestroyWindow(vulk_window);
+		glfwTerminate();
+	}
+
+	GLFWwindow* createWindow( int WIDTH, int HEIGHT) {
+		GLFWwindow* vulk_window = nullptr;
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
 		vulk_window = glfwCreateWindow(WIDTH, HEIGHT, "vulk", nullptr, nullptr);
 
-		if (!vulk_window) { return false; }
-
-		if (glfwCreateWindowSurface(vulkInstance::getInstance(), vulk_window, nullptr, &vulkSurface) != VK_SUCCESS) {
-			std::cerr << "We have a problem on Surface!" << std::endl;
-			return false;
-		}
-
-		return true;
-	}
-
-	void Destroy() {
-		glfwDestroyWindow(vulk_window);
-		glfwTerminate();
-	}
-
-	GLFWwindow* getWindow() {
 		return vulk_window;
 	}
 
-	VkSurfaceKHR getSurface() {
+	VkSurfaceKHR createSurface(VkInstance instance, GLFWwindow* vulk_window) {
+		VkSurfaceKHR vulkSurface = VK_NULL_HANDLE;
+		if (glfwCreateWindowSurface(instance, vulk_window, nullptr, &vulkSurface) != VK_SUCCESS) {
+			std::cerr << "We have a problem on Surface!" << std::endl;
+			return false;
+		}
 		return vulkSurface;
 	}
 }

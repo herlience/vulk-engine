@@ -36,6 +36,9 @@
     <ClInclude Include="src\API\Vulkan\Backend\vulkShaderModule.h">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
+    <ClInclude Include="src\API\Vulkan\Backend\vulkFrameBuffer.h">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\API\Vulkan\Backend\vulkWindow.cpp">
@@ -57,6 +60,9 @@
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
     <ClCompile Include="src\API\Vulkan\Backend\vulkShaderModule.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
+    <ClCompile Include="src\API\Vulkan\Backend\vulkFrameBuffer.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
   </ItemGroup>
