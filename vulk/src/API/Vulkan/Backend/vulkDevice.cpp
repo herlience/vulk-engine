@@ -52,11 +52,21 @@ namespace vulkDevice {
 
         VkPhysicalDeviceFeatures deviceFeatures{};
 
+        VkPhysicalDeviceSynchronization2Features sync2Features{};
+        sync2Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
+        sync2Features.synchronization2 = VK_TRUE;
+
+        VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures{};
+        dynamicRenderingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
+        dynamicRenderingFeatures.dynamicRendering = VK_TRUE;
+        dynamicRenderingFeatures.pNext = &sync2Features;
+
         VkDeviceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
         createInfo.pEnabledFeatures = &deviceFeatures;
+        createInfo.pNext = &dynamicRenderingFeatures;
 
         createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
         createInfo.ppEnabledExtensionNames = deviceExtensions.data();

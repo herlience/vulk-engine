@@ -27,8 +27,16 @@ namespace vulkanWindow {
 		VkSurfaceKHR vulkSurface = VK_NULL_HANDLE;
 		if (glfwCreateWindowSurface(instance, vulk_window, nullptr, &vulkSurface) != VK_SUCCESS) {
 			std::cerr << "We have a problem on Surface!" << std::endl;
-			return false;
+			return VK_NULL_HANDLE;
 		}
 		return vulkSurface;
+	}
+
+	bool ShouldClose(GLFWwindow* vulk_window) {
+		return glfwWindowShouldClose(vulk_window);
+	}
+
+	void PollEvents() {
+		glfwPollEvents();
 	}
 }

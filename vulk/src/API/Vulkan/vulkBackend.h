@@ -8,9 +8,14 @@
 #include "Backend/vulkWindow.h"
 #include "Backend/vulkGraphicsPipeline.h"
 #include "Backend/vulkShaderModule.h"
-#include "Backend/vulkRenderpass.h"
-#include "Backend/vulkFrameBuffer.h"
+#include "Backend/vulkRendering.h"
 
 namespace vulkBackend {
+	void InitVulk();
+	void DestroyVulk();
 
+	void RenderSingleFrame();
+	void WaitIdle();
+
+	GLFWwindow* getwindow();
 }

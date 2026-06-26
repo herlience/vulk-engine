@@ -1,26 +1,18 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/include/glfw3.h>
 
-#undef VK_PRESENT_MODE_MAILBOX_BIT
-#undef VK_PRESENT_MODE_FIFO_BIT
-#define VK_PRESENT_MODE_MAILBOX_BIT static_cast<VkPresentModeKHR>(1)
-#define VK_PRESENT_MODE_FIFO_BIT static_cast<VkPresentModeKHR>(2)
-
 #include "vulkSwapchain.h"
-#include "vulkDevice.h"
+
 #include <algorithm>
 #include <iostream>
 #include <limits>
 
 namespace vulkSwapchain {
     
-    VkFormat vulkSwapchainImageFormat;
-    VkExtent2D vulkSwapchainExtent;
-    std::vector<VkImage> swapchainImages;
-    
-
-    VkSwapchainKHR create(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice logicalDevice, GLFWwindow* window, VkSurfaceKHR surface) {
-        VkSwapchainKHR vulkSwapchain = VK_NULL_HANDLE;
+    SwapchainVariables create(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice logicalDevice, GLFWwindow* window, VkSurfaceKHR surface, vulkDevice::QueueFamilyIndices indices) {
+        SwapchainVariables variables;
+        std::vector<VkImage> swapchainImages;
+        VkSwapchainKHR vulkSwapchain;
 
         SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice, surface);
 
@@ -43,7 +35,6 @@ namespace vulkSwapchain {
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-        vulkDevice::QueueFamilyIndices indices = vulkDevice::findQueueFamilies(physicalDevice, surface);
         uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
 
         if (indices.graphicsFamily != indices.presentFamily) {
@@ -71,11 +62,15 @@ namespace vulkSwapchain {
         swapchainImages.resize(imageCount);
         vkGetSwapchainImagesKHR(logicalDevice, vulkSwapchain, &imageCount, swapchainImages.data());
 
-        vulkSwapchainImageFormat = surfaceFormat.format;
-        vulkSwapchainExtent = extent;
+        variables.format = surfaceFormat.format;
+        variables.extent = extent;
+        variables.swapchain = vulkSwapchain;
+        variables.images = swapchainImages;
+
+        return variables;
     }
 
-    std::vector<VkImageView> createImageViews(VkDevice logicalDevice) {
+    std::vector<VkImageView> createImageViews(VkDevice logicalDevice, const std::vector<VkImage>& swapchainImages, VkFormat vulkSwapchainImageFormat) {
         std::vector<VkImageView> swapchainImageViews;
 
         swapchainImageViews.resize(swapchainImages.size());
@@ -106,7 +101,7 @@ namespace vulkSwapchain {
         return swapchainImageViews;
     }
 
-    void clean(VkDevice logicalDevice, VkSwapchainKHR vulkSwapchain, std::vector<VkImageView>& swapchainImageViews) {
+    void clean(VkDevice logicalDevice, VkSwapchainKHR& vulkSwapchain, std::vector<VkImageView>& swapchainImageViews, std::vector<VkImage>& swapchainImages) {
         for (auto imageView : swapchainImageViews) {
             vkDestroyImageView(logicalDevice, imageView, nullptr);
         }
@@ -151,11 +146,11 @@ namespace vulkSwapchain {
 
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
         for (const auto& availablePresentMode : availablePresentModes) {
-            if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_BIT) {
+            if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
                 return availablePresentMode;
             }
         }
-        return VK_PRESENT_MODE_FIFO_BIT;
+        return VK_PRESENT_MODE_FIFO_KHR;
     }
 
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* window) {

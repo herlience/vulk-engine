@@ -7,5 +7,8 @@ namespace vulkanWindow {
 	void Destroy(GLFWwindow* vulk_window);
 	GLFWwindow* createWindow(int WIDTH, int HEIGHT);
 	VkSurfaceKHR createSurface(VkInstance instance, GLFWwindow* vulk_window);
+
+	bool ShouldClose(GLFWwindow* vulk_window);
+	void PollEvents();
 }
 

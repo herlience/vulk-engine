@@ -30,13 +30,16 @@
     <ClInclude Include="src\API\Vulkan\Backend\vulkGraphicsPipeline.h">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
-    <ClInclude Include="src\API\Vulkan\Backend\vulkRenderpass.h">
-      <Filter>Üst Bilgi Dosyaları</Filter>
-    </ClInclude>
     <ClInclude Include="src\API\Vulkan\Backend\vulkShaderModule.h">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
-    <ClInclude Include="src\API\Vulkan\Backend\vulkFrameBuffer.h">
+    <ClInclude Include="src\API\Vulkan\vulkBackend.h">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
+    <ClInclude Include="src\API\Vulkan\Backend\vulkRendering.h">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Backend\Backend.h">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
   </ItemGroup>
@@ -56,13 +59,16 @@
     <ClCompile Include="src\API\Vulkan\Backend\vulkGraphicsPipeline.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
-    <ClCompile Include="src\API\Vulkan\Backend\vulkRenderpass.cpp">
-      <Filter>Kaynak Dosyalar</Filter>
-    </ClCompile>
     <ClCompile Include="src\API\Vulkan\Backend\vulkShaderModule.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
-    <ClCompile Include="src\API\Vulkan\Backend\vulkFrameBuffer.cpp">
+    <ClCompile Include="src\API\Vulkan\vulkBackend.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
+    <ClCompile Include="src\API\Vulkan\Backend\vulkRendering.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Backend\Backend.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
   </ItemGroup>

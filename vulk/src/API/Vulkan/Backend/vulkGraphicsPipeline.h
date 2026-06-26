@@ -2,9 +2,8 @@
 #include <vulkan/vulkan.h>
 
 namespace vulkGraphicsPipeline {
-    VkPipeline CreateGraphicsPipeline(const VkPipelineRenderingCreateInfo& renderingInfo, VkPipelineLayout pipelineLayout, VkShaderModule vertexShader, VkShaderModule fragmentShader);
-    void DestroyPipeline(VkPipeline pipeline);
-    VkPipelineLayout CreatePipelineLayout(const VkPipelineLayoutCreateInfo& layoutInfo);
-    void DestroyPipelineLayout(VkPipelineLayout pipelineLayout);
-
+    VkPipeline CreateGraphicsPipeline(VkDevice device, VkPipelineLayout pipelineLayout, VkShaderModule vertexShader, VkShaderModule fragmentShader, VkFormat swapchainFormat);
+    void DestroyPipeline(VkPipeline pipeline, VkDevice device);
+    VkPipelineLayout CreatePipelineLayout(VkDevice device);
+    void DestroyPipelineLayout(VkPipelineLayout pipelineLayout, VkDevice device);
 }

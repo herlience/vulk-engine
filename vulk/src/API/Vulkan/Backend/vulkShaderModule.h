@@ -7,7 +7,7 @@
 
 
 namespace vulkShaderModule {
-	VkShaderModule createShaderModule(const std::vector<char>& code);
+	VkShaderModule createShaderModule(const std::vector<char>& code, VkDevice device);
 	void destroyShaderModule(VkShaderModule shaderModule, VkDevice device);
 
 	std::vector<char> readFile(const std::string& filename);

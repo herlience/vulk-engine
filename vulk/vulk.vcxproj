@@ -19,24 +19,26 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Backend\Backend.h" />
     <ClInclude Include="src\API\Vulkan\Backend\vulkWindow.h" />
     <ClInclude Include="src\API\Vulkan\Backend\vulkInstance.h" />
     <ClInclude Include="src\API\Vulkan\Backend\vulkDevice.h" />
     <ClInclude Include="src\API\Vulkan\Backend\vulkSwapchain.h" />
     <ClInclude Include="src\API\Vulkan\Backend\vulkGraphicsPipeline.h" />
-    <ClInclude Include="src\API\Vulkan\Backend\vulkRenderpass.h" />
     <ClInclude Include="src\API\Vulkan\Backend\vulkShaderModule.h" />
-    <ClInclude Include="src\API\Vulkan\Backend\vulkFrameBuffer.h" />
+    <ClInclude Include="src\API\Vulkan\vulkBackend.h" />
+    <ClInclude Include="src\API\Vulkan\Backend\vulkRendering.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Backend\Backend.cpp" />
     <ClCompile Include="src\API\Vulkan\Backend\vulkWindow.cpp" />
     <ClCompile Include="src\API\Vulkan\Backend\vulkInstance.cpp" />
     <ClCompile Include="src\API\Vulkan\Backend\vulkDevice.cpp" />
     <ClCompile Include="src\API\Vulkan\Backend\vulkSwapchain.cpp" />
     <ClCompile Include="src\API\Vulkan\Backend\vulkGraphicsPipeline.cpp" />
-    <ClCompile Include="src\API\Vulkan\Backend\vulkRenderpass.cpp" />
     <ClCompile Include="src\API\Vulkan\Backend\vulkShaderModule.cpp" />
-    <ClCompile Include="src\API\Vulkan\Backend\vulkFrameBuffer.cpp" />
+    <ClCompile Include="src\API\Vulkan\vulkBackend.cpp" />
+    <ClCompile Include="src\API\Vulkan\Backend\vulkRendering.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\Shaders\compile.bat" />

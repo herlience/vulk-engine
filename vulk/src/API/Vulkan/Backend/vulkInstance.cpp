@@ -21,7 +21,7 @@ namespace vulkInstance {
 
         if (enableValidationLayers && !checkValidationLayerSupport()) {
             std::cerr << "Requested Validation Layers but not supported!" << std::endl;
-            return;
+            return VK_NULL_HANDLE;
         }
 
         VkApplicationInfo appInfo{};
@@ -58,7 +58,7 @@ namespace vulkInstance {
 
         if (vkCreateInstance(&createInfo, nullptr, &vulkInstance) != VK_SUCCESS) {
             std::cerr << "We have a problem on instance!" << std::endl;
-            return;
+            return VK_NULL_HANDLE;
         }
         
 
@@ -80,6 +80,8 @@ namespace vulkInstance {
                 func(vulkInstance, &messengerInfo, nullptr, &vulkDebugMessenger);
             }
         }
+
+        return vulkDebugMessenger;
     }
 
     std::vector<const char*> getRequiredExtensions() {
@@ -118,9 +120,6 @@ namespace vulkInstance {
             if (func != nullptr) {
                 func(vulkInstance, vulkDebugMessenger, nullptr);
             }
-        }
-        if (vulkInstance != VK_NULL_HANDLE) {
-            vkDestroyInstance(vulkInstance, nullptr);
         }
     }
 }

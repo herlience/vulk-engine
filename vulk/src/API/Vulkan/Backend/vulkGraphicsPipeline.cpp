@@ -6,7 +6,7 @@
 #include <iostream>
 
 namespace vulkGraphicsPipeline {
-    VkPipeline CreateGraphicsPipeline(const VkPipelineRenderingCreateInfo& renderingInfo, VkPipelineLayout pipelineLayout, VkShaderModule vertexShader, VkShaderModule fragmentShader) {
+    VkPipeline CreateGraphicsPipeline(VkDevice device, VkPipelineLayout pipelineLayout, VkShaderModule vertexShader, VkShaderModule fragmentShader, VkFormat swapchainFormat) {
         VkPipelineShaderStageCreateInfo shaderStages[2] = {};
 
         // Vertex Shader Stage
@@ -42,8 +42,8 @@ namespace vulkGraphicsPipeline {
         rasterizer.rasterizerDiscardEnable = VK_FALSE;
         rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
         rasterizer.lineWidth = 1.0f;
-        rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-        rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+        rasterizer.cullMode = VK_CULL_MODE_NONE;
+        rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         rasterizer.depthBiasEnable = VK_FALSE;
 
         VkPipelineMultisampleStateCreateInfo multisampling = {};
@@ -61,6 +61,11 @@ namespace vulkGraphicsPipeline {
         colorBlending.logicOp = VK_LOGIC_OP_COPY;
         colorBlending.attachmentCount = 1;
         colorBlending.pAttachments = &colorBlendAttachment;
+
+        VkPipelineRenderingCreateInfo renderingCreateInfo{};
+        renderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+        renderingCreateInfo.colorAttachmentCount = 1;
+        renderingCreateInfo.pColorAttachmentFormats = &swapchainFormat;
 
         VkDynamicState dynamicStates[] = {
             VK_DYNAMIC_STATE_VIEWPORT,
@@ -84,35 +89,42 @@ namespace vulkGraphicsPipeline {
         pipelineInfo.pColorBlendState = &colorBlending;
         pipelineInfo.pDynamicState = &dynamicState;
         pipelineInfo.layout = pipelineLayout;
-        pipelineInfo.renderPass = VK_NULL_HANDLE; // Not used with dynamic rendering
+        pipelineInfo.renderPass = VK_NULL_HANDLE; // Not used with dynamic rendering 
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
         // Dynamic Rendering-specific pipeline info
-        pipelineInfo.pNext = &renderingInfo;
+        pipelineInfo.pNext = &renderingCreateInfo;
 
         VkPipeline pipeline;
-        if (vkCreateGraphicsPipelines(vulkDevice::getLogicalDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS) {
+        if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS) {
             std::cout << "Failed to create graphics pipeline\n";
             return VK_NULL_HANDLE;
         }
 
         return pipeline;
     }
-    void DestroyPipeline(VkPipeline pipeline) {
-        vkDestroyPipeline(vulkDevice::getLogicalDevice(), pipeline, nullptr);
+    void DestroyPipeline(VkPipeline pipeline, VkDevice device) {
+        vkDestroyPipeline(device, pipeline, nullptr);
     }
 
-    VkPipelineLayout CreatePipelineLayout(const VkPipelineLayoutCreateInfo& layoutInfo) {
+    VkPipelineLayout CreatePipelineLayout(VkDevice device) {
+        VkPipelineLayoutCreateInfo layoutInfo{};
+        layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        layoutInfo.setLayoutCount = 0;
+        layoutInfo.pSetLayouts = nullptr;
+        layoutInfo.pushConstantRangeCount = 0;
+        layoutInfo.pPushConstantRanges = nullptr;
+
         VkPipelineLayout pipelineLayout;
-        if (vkCreatePipelineLayout(vulkDevice::getLogicalDevice(), &layoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+        if (vkCreatePipelineLayout(device, &layoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
             std::cout << "Failed to create pipeline layout\n";
             return VK_NULL_HANDLE;
         }
         return pipelineLayout;
     }
 
-    void DestroyPipelineLayout(VkPipelineLayout pipelineLayout) {
-        vkDestroyPipelineLayout(vulkDevice::getLogicalDevice(), pipelineLayout, nullptr);
+    void DestroyPipelineLayout(VkPipelineLayout pipelineLayout, VkDevice device) {
+        vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
     }
 }
