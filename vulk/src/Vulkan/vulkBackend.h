@@ -9,6 +9,8 @@
 #include "Backend/vulkGraphicsPipeline.h"
 #include "Backend/vulkShaderModule.h"
 #include "Backend/vulkRendering.h"
+#include "Backend/vulkBuffer.h"
+#include "GeoData.h"
 
 namespace vulkBackend {
 	void InitVulk();

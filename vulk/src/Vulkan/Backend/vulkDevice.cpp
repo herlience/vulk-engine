@@ -34,7 +34,7 @@ namespace vulkDevice {
         return vulkPhysicalDevice;
     }
 
-    VkDevice createLogicalDevice(VkSurfaceKHR surface, VkPhysicalDevice vulkPhysicalDevice, QueueFamilyIndices indices) {
+    VkDevice createLogicalDevice(VkSurfaceKHR surface, VkPhysicalDevice vulkPhysicalDevice, QueueFamilyIndices indices, PFN_vkCmdSetVertexInputEXT& fnCmdSetVertexInputEXT) {
         VkDevice vulkLogicalDevice = VK_NULL_HANDLE;
 
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -52,9 +52,15 @@ namespace vulkDevice {
 
         VkPhysicalDeviceFeatures deviceFeatures{};
 
+        VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT dynamicVertexFeatures{};
+        dynamicVertexFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT;
+        dynamicVertexFeatures.vertexInputDynamicState = VK_TRUE;
+        dynamicVertexFeatures.pNext = nullptr; 
+
         VkPhysicalDeviceSynchronization2Features sync2Features{};
         sync2Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
         sync2Features.synchronization2 = VK_TRUE;
+        sync2Features.pNext = &dynamicVertexFeatures;
 
         VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures{};
         dynamicRenderingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
@@ -75,6 +81,12 @@ namespace vulkDevice {
 
         if (vkCreateDevice(vulkPhysicalDevice, &createInfo, nullptr, &vulkLogicalDevice) != VK_SUCCESS) {
             throw std::runtime_error("We have a problem for creating logical device!");
+        }
+
+        fnCmdSetVertexInputEXT = (PFN_vkCmdSetVertexInputEXT)vkGetDeviceProcAddr(vulkLogicalDevice, "vkCmdSetVertexInputEXT");
+
+        if (fnCmdSetVertexInputEXT == nullptr) {
+            std::cout << "We have a problem on VertexInputEXT" << std::endl;
         }
 
         return vulkLogicalDevice;

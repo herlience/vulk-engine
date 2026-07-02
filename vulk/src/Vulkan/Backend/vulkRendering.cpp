@@ -1,4 +1,5 @@
 #include "vulkRendering.h"
+#include "vulkBuffer.h"
 #include <iostream>
 #include <vector>
 
@@ -74,7 +75,10 @@ namespace vulkRendering {
         const int MAX_FRAMES_IN_FLIGHT,
         const std::vector<VkSemaphore>& imageAvailableSemaphores, 
         const std::vector<VkSemaphore>& renderFinishedSemaphores,
-        const std::vector<VkFence>& inFlightFences
+        const std::vector<VkFence>& inFlightFences,
+        VkBuffer vertexbuffer,
+        const std::vector<Vertex>& vertices,
+        PFN_vkCmdSetVertexInputEXT& fnCmdSetVertexInputEXT
     ) {
         vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
         vkResetFences(device, 1, &inFlightFences[currentFrame]);
@@ -150,7 +154,39 @@ namespace vulkRendering {
         scissor.extent = extent;
         vkCmdSetScissor(commandBuffers[currentFrame], 0, 1, &scissor);
 
-        vkCmdDraw(commandBuffers[currentFrame], 3, 1, 0, 0); // 3 vertex = 1 üçgen
+        VkBuffer vertexBuffers[] = { vertexbuffer };
+        VkDeviceSize offsets[] = { 0 };
+        vkCmdBindVertexBuffers(commandBuffers[currentFrame], 0, 1, vertexBuffers, offsets);
+
+        VkVertexInputBindingDescription2EXT bindingDesc{};
+        bindingDesc.sType = VK_STRUCTURE_TYPE_VERTEX_INPUT_BINDING_DESCRIPTION_2_EXT;
+        bindingDesc.binding = 0;
+        bindingDesc.stride = sizeof(Vertex);
+        bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+        bindingDesc.divisor = 1;
+
+        
+        VkVertexInputAttributeDescription2EXT attributeDescs[2]{};
+
+        // Pozisyon verisi
+        attributeDescs[0].sType = VK_STRUCTURE_TYPE_VERTEX_INPUT_ATTRIBUTE_DESCRIPTION_2_EXT;
+        attributeDescs[0].location = 0; 
+        attributeDescs[0].binding = 0;
+        attributeDescs[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescs[0].offset = offsetof(Vertex, pos); 
+
+        // Renk verisi
+        attributeDescs[1].sType = VK_STRUCTURE_TYPE_VERTEX_INPUT_ATTRIBUTE_DESCRIPTION_2_EXT;
+        attributeDescs[1].location = 1; 
+        attributeDescs[1].binding = 0;
+        attributeDescs[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescs[1].offset = offsetof(Vertex, color);
+
+        if (fnCmdSetVertexInputEXT != nullptr) {
+            fnCmdSetVertexInputEXT(commandBuffers[currentFrame], 1, &bindingDesc, 2, attributeDescs);
+        }
+
+        vkCmdDraw(commandBuffers[currentFrame], static_cast<uint32_t>(vertices.size()), 1, 0, 0); // 3 vertex = 1 üçgen
         vkCmdEndRendering(commandBuffers[currentFrame]);
 
         VkImageMemoryBarrier2 imageBarrier2{};

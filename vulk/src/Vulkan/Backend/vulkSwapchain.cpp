@@ -173,6 +173,4 @@ namespace vulkSwapchain {
         }
     }
 
-   /* VkFormat getSwapchainImageFormat() { return vulkSwapchainImageFormat; }
-    VkExtent2D getSwapchainExtent() { return vulkSwapchainExtent; }*/
 }

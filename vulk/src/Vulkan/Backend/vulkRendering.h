@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.h>
 #include "vulkSwapchain.h"
 #include <vector>
+#include "vulkBuffer.h"
 
 namespace vulkRendering {
 	VkCommandPool createCommandPool(VkDevice device, uint32_t queueFamilyIndex);
@@ -28,7 +29,10 @@ namespace vulkRendering {
         const int MAX_FRAMES_IN_FLIGHT,
         const std::vector<VkSemaphore>& imageAvailableSemaphores,
         const std::vector<VkSemaphore>& renderFinishedSemaphores,
-        const std::vector<VkFence>& inFlightFences
+        const std::vector<VkFence>& inFlightFences,
+        VkBuffer vertexbuffer,
+        const std::vector<Vertex>& vertices,
+        PFN_vkCmdSetVertexInputEXT& fnCmdSetVertexInputEXT
         );
 }
 

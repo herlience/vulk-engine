@@ -17,7 +17,7 @@ namespace vulkDevice {
     void clean(VkDevice vulkLogicalDevice, VkPhysicalDevice vulkPhysicalDevice);
    
     VkPhysicalDevice pickPhysicalDevice(VkInstance instance, VkSurfaceKHR surface);
-    VkDevice createLogicalDevice(VkSurfaceKHR surface, VkPhysicalDevice vulkPhysicalDevice, QueueFamilyIndices indices);
+    VkDevice createLogicalDevice(VkSurfaceKHR surface, VkPhysicalDevice vulkPhysicalDevice, QueueFamilyIndices indices, PFN_vkCmdSetVertexInputEXT& fnCmdSetVertexInputEXT);
 
     VkQueue createGraphicsQueue(VkDevice vulkLogicalDevice, QueueFamilyIndices indices);
     VkQueue createPresentQueue(VkDevice vulkLogicalDevice, QueueFamilyIndices indices);
@@ -27,7 +27,8 @@ namespace vulkDevice {
     bool checkDeviceExtensionSupport(VkPhysicalDevice device);
 
     const std::vector<const char*> deviceExtensions = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+        VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME
     };
 }
 

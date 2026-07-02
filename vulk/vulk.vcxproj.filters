@@ -15,60 +15,69 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\API\Vulkan\Backend\vulkWindow.h">
+    <ClInclude Include="src\Vulkan\Backend\vulkWindow.h">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
-    <ClInclude Include="src\API\Vulkan\Backend\vulkInstance.h">
+    <ClInclude Include="src\Vulkan\Backend\vulkInstance.h">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
-    <ClInclude Include="src\API\Vulkan\Backend\vulkDevice.h">
+    <ClInclude Include="src\Vulkan\Backend\vulkDevice.h">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
-    <ClInclude Include="src\API\Vulkan\Backend\vulkSwapchain.h">
+    <ClInclude Include="src\Vulkan\Backend\vulkSwapchain.h">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
-    <ClInclude Include="src\API\Vulkan\Backend\vulkGraphicsPipeline.h">
+    <ClInclude Include="src\Vulkan\Backend\vulkGraphicsPipeline.h">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
-    <ClInclude Include="src\API\Vulkan\Backend\vulkShaderModule.h">
+    <ClInclude Include="src\Vulkan\Backend\vulkShaderModule.h">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
-    <ClInclude Include="src\API\Vulkan\vulkBackend.h">
+    <ClInclude Include="src\Vulkan\vulkBackend.h">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
-    <ClInclude Include="src\API\Vulkan\Backend\vulkRendering.h">
+    <ClInclude Include="src\Vulkan\Backend\vulkRendering.h">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
     <ClInclude Include="src\Backend\Backend.h">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
+    <ClInclude Include="src\Vulkan\Backend\vulkBuffer.h">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Vulkan\GeoData.h">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\API\Vulkan\Backend\vulkWindow.cpp">
+    <ClCompile Include="src\Vulkan\Backend\vulkWindow.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
-    <ClCompile Include="src\API\Vulkan\Backend\vulkInstance.cpp">
+    <ClCompile Include="src\Vulkan\Backend\vulkInstance.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
-    <ClCompile Include="src\API\Vulkan\Backend\vulkDevice.cpp">
+    <ClCompile Include="src\Vulkan\Backend\vulkDevice.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
-    <ClCompile Include="src\API\Vulkan\Backend\vulkSwapchain.cpp">
+    <ClCompile Include="src\Vulkan\Backend\vulkSwapchain.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
-    <ClCompile Include="src\API\Vulkan\Backend\vulkGraphicsPipeline.cpp">
+    <ClCompile Include="src\Vulkan\Backend\vulkGraphicsPipeline.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
-    <ClCompile Include="src\API\Vulkan\Backend\vulkShaderModule.cpp">
+    <ClCompile Include="src\Vulkan\Backend\vulkShaderModule.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
-    <ClCompile Include="src\API\Vulkan\vulkBackend.cpp">
+    <ClCompile Include="src\Vulkan\vulkBackend.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
-    <ClCompile Include="src\API\Vulkan\Backend\vulkRendering.cpp">
+    <ClCompile Include="src\Vulkan\Backend\vulkRendering.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
     <ClCompile Include="src\Backend\Backend.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Vulkan\Backend\vulkBuffer.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
   </ItemGroup>

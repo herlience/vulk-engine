@@ -20,25 +20,28 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Backend\Backend.h" />
-    <ClInclude Include="src\API\Vulkan\Backend\vulkWindow.h" />
-    <ClInclude Include="src\API\Vulkan\Backend\vulkInstance.h" />
-    <ClInclude Include="src\API\Vulkan\Backend\vulkDevice.h" />
-    <ClInclude Include="src\API\Vulkan\Backend\vulkSwapchain.h" />
-    <ClInclude Include="src\API\Vulkan\Backend\vulkGraphicsPipeline.h" />
-    <ClInclude Include="src\API\Vulkan\Backend\vulkShaderModule.h" />
-    <ClInclude Include="src\API\Vulkan\vulkBackend.h" />
-    <ClInclude Include="src\API\Vulkan\Backend\vulkRendering.h" />
+    <ClInclude Include="src\Vulkan\Backend\vulkWindow.h" />
+    <ClInclude Include="src\Vulkan\Backend\vulkInstance.h" />
+    <ClInclude Include="src\Vulkan\Backend\vulkDevice.h" />
+    <ClInclude Include="src\Vulkan\Backend\vulkSwapchain.h" />
+    <ClInclude Include="src\Vulkan\Backend\vulkGraphicsPipeline.h" />
+    <ClInclude Include="src\Vulkan\Backend\vulkShaderModule.h" />
+    <ClInclude Include="src\Vulkan\GeoData.h" />
+    <ClInclude Include="src\Vulkan\vulkBackend.h" />
+    <ClInclude Include="src\Vulkan\Backend\vulkRendering.h" />
+    <ClInclude Include="src\Vulkan\Backend\vulkBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Backend\Backend.cpp" />
-    <ClCompile Include="src\API\Vulkan\Backend\vulkWindow.cpp" />
-    <ClCompile Include="src\API\Vulkan\Backend\vulkInstance.cpp" />
-    <ClCompile Include="src\API\Vulkan\Backend\vulkDevice.cpp" />
-    <ClCompile Include="src\API\Vulkan\Backend\vulkSwapchain.cpp" />
-    <ClCompile Include="src\API\Vulkan\Backend\vulkGraphicsPipeline.cpp" />
-    <ClCompile Include="src\API\Vulkan\Backend\vulkShaderModule.cpp" />
-    <ClCompile Include="src\API\Vulkan\vulkBackend.cpp" />
-    <ClCompile Include="src\API\Vulkan\Backend\vulkRendering.cpp" />
+    <ClCompile Include="src\Vulkan\Backend\vulkWindow.cpp" />
+    <ClCompile Include="src\Vulkan\Backend\vulkInstance.cpp" />
+    <ClCompile Include="src\Vulkan\Backend\vulkDevice.cpp" />
+    <ClCompile Include="src\Vulkan\Backend\vulkSwapchain.cpp" />
+    <ClCompile Include="src\Vulkan\Backend\vulkGraphicsPipeline.cpp" />
+    <ClCompile Include="src\Vulkan\Backend\vulkShaderModule.cpp" />
+    <ClCompile Include="src\Vulkan\vulkBackend.cpp" />
+    <ClCompile Include="src\Vulkan\Backend\vulkRendering.cpp" />
+    <ClCompile Include="src\Vulkan\Backend\vulkBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\Shaders\compile.bat" />

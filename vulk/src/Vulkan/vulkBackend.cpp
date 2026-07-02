@@ -12,11 +12,14 @@ namespace vulkBackend {
 	VkPipeline pipeline;
 	VkPipelineLayout pipelinelayout;
 	vulkDevice::QueueFamilyIndices indices;
+	VkBuffer vertexbuffer;
+	VkDeviceMemory vertexbuffermemory;
 	VkCommandPool commandpool;
 	std::vector<VkCommandBuffer> commandbuffers;
 	std::vector<VkSemaphore> imageavailablesemaphores;
 	std::vector<VkSemaphore> renderfinishedsemaphores;
 	std::vector<VkFence> inflightfences;
+	PFN_vkCmdSetVertexInputEXT fnCmdSetVertexInputEXT;
 
 	VkQueue graphicsQueue;
 	VkQueue presentQueue;
@@ -27,8 +30,8 @@ namespace vulkBackend {
 	const int MAX_FRAMES_IN_FLIGHT = 2;
 	size_t currentFrame = 0;
 
-	const int WIDTH = 1280;
-	const int HEIGHT = 720;
+	const int WIDTH = 800;
+	const int HEIGHT = 600;
 
 	void InitVulk() {
 		glfwInit();
@@ -40,7 +43,7 @@ namespace vulkBackend {
 
 		physicaldevice = vulkDevice::pickPhysicalDevice(instance, surface);
 		indices = vulkDevice::findQueueFamilies(physicaldevice, surface);
-		logicaldevice = vulkDevice::createLogicalDevice(surface, physicaldevice, indices);
+		logicaldevice = vulkDevice::createLogicalDevice(surface, physicaldevice, indices, fnCmdSetVertexInputEXT);
 
 		swapchainvariables = vulkSwapchain::create(instance, physicaldevice, logicaldevice, window, surface, indices);
 		swapchainimageviews = vulkSwapchain::createImageViews(logicaldevice, swapchainvariables.images, swapchainvariables.format);
@@ -56,6 +59,16 @@ namespace vulkBackend {
 
 		graphicsQueue = vulkDevice::createGraphicsQueue(logicaldevice, indices);
 		presentQueue = vulkDevice::createPresentQueue(logicaldevice, indices);
+
+		VkBufferCreateInfo bufferInfo{};
+		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferInfo.size = sizeof(vertices[0]) * vertices.size();
+		bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		vertexbuffer = vulkBuffer::createVertexBuffer(logicaldevice, vertexbuffermemory, bufferInfo, physicaldevice);
+		vulkBuffer::bindMemory(logicaldevice, vertexbuffer, vertexbuffermemory);
+		vulkBuffer::MapMemory(logicaldevice, vertexbuffermemory, vertices, bufferInfo);
 
 		commandbuffers.resize(MAX_FRAMES_IN_FLIGHT);
 		imageavailablesemaphores.resize(swapchainvariables.images.size());
@@ -84,6 +97,9 @@ namespace vulkBackend {
 			vkDestroyFence(logicaldevice, inflightfences[i], nullptr);
 		}
 		vkDestroyCommandPool(logicaldevice, commandpool, nullptr);
+
+		vkDestroyBuffer(logicaldevice, vertexbuffer, nullptr);
+		vkFreeMemory(logicaldevice, vertexbuffermemory, nullptr);
 
 		vkDestroyPipeline(logicaldevice, pipeline, nullptr);
 		vkDestroyShaderModule(logicaldevice, fragshadermodule, nullptr);
@@ -126,7 +142,10 @@ namespace vulkBackend {
 			MAX_FRAMES_IN_FLIGHT,            
 			imageavailablesemaphores,       
 			renderfinishedsemaphores,        
-			inflightfences                   
+			inflightfences, 
+			vertexbuffer,
+			vertices,
+			fnCmdSetVertexInputEXT
 		);
 
 	}
