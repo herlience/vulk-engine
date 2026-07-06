@@ -60,7 +60,7 @@ namespace vulkRendering {
     }
 
     void DrawFrame(
-        VkDevice device,
+        /*VkDevice device,
         VkSwapchainKHR swapchain,
         const std::vector<VkImage>& images,
         const std::vector<VkImageView>& imageViews,
@@ -78,27 +78,32 @@ namespace vulkRendering {
         const std::vector<VkFence>& inFlightFences,
         VkBuffer vertexbuffer,
         const std::vector<Vertex>& vertices,
-        PFN_vkCmdSetVertexInputEXT& fnCmdSetVertexInputEXT
+        PFN_vkCmdSetVertexInputEXT& fnCmdSetVertexInputEXT*/
+        frameComponents& framecomp,
+        VkSwapchainKHR swapchain,
+        const std::vector<VkImage>& images,
+        VkFormat swapchainFormat,
+        VkExtent2D extent
     ) {
-        vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-        vkResetFences(device, 1, &inFlightFences[currentFrame]);
+        vkWaitForFences(framecomp.device, 1, &framecomp.inFlightFences[framecomp.currentFrame], VK_TRUE, UINT64_MAX);
+        vkResetFences(framecomp.device, 1, &framecomp.inFlightFences[framecomp.currentFrame]);
 
         uint32_t imageIndex;
         vkAcquireNextImageKHR(
-            device,
+            framecomp.device,
             swapchain,
             UINT64_MAX,
-            imageAvailableSemaphores[currentFrame], // 0 veya 1 gidecek
+            framecomp.imageAvailableSemaphores[framecomp.currentFrame], // 0 veya 1 gidecek
             VK_NULL_HANDLE,
             &imageIndex
         );
 
-        vkResetCommandBuffer(commandBuffers[currentFrame], 0);
+        vkResetCommandBuffer(framecomp.commandBuffers[framecomp.currentFrame], 0);
 
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-        vkBeginCommandBuffer(commandBuffers[currentFrame], &beginInfo);
+        vkBeginCommandBuffer(framecomp.commandBuffers[framecomp.currentFrame], &beginInfo);
 
         VkImageMemoryBarrier2 imageBarrier{};
         imageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
@@ -118,11 +123,11 @@ namespace vulkRendering {
         dependencyInfo.imageMemoryBarrierCount = 1;
         dependencyInfo.pImageMemoryBarriers = &imageBarrier;
 
-        vkCmdPipelineBarrier2(commandBuffers[currentFrame], &dependencyInfo);
+        vkCmdPipelineBarrier2(framecomp.commandBuffers[framecomp.currentFrame], &dependencyInfo);
 
         VkRenderingAttachmentInfo colorAttachment{};
         colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-        colorAttachment.imageView = imageViews[imageIndex];
+        colorAttachment.imageView = framecomp.imageViews[imageIndex];
         colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -130,33 +135,33 @@ namespace vulkRendering {
 
         VkRenderingInfo renderingInfo{};
         renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
-        renderingInfo.renderArea.extent = extent;
+        renderingInfo.renderArea.extent = framecomp.extent;
         renderingInfo.layerCount = 1;
         renderingInfo.colorAttachmentCount = 1;
         renderingInfo.pColorAttachments = &colorAttachment;
 
-        vkCmdBeginRendering(commandBuffers[currentFrame], &renderingInfo);
+        vkCmdBeginRendering(framecomp.commandBuffers[framecomp.currentFrame], &renderingInfo);
 
-        vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+        vkCmdBindPipeline(framecomp.commandBuffers[framecomp.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, framecomp.pipeline);
 
         VkViewport viewport{};
         viewport.x = 0.0f;
         viewport.y = 0.0f;
-        viewport.width = static_cast<float>(extent.width);
-        viewport.height = static_cast<float>(extent.height);
+        viewport.width = static_cast<float>(framecomp.extent.width);
+        viewport.height = static_cast<float>(framecomp.extent.height);
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
-        vkCmdSetViewport(commandBuffers[currentFrame], 0, 1, &viewport);
+        vkCmdSetViewport(framecomp.commandBuffers[framecomp.currentFrame], 0, 1, &viewport);
 
         // DYNAMIC SCISSOR AYARI
         VkRect2D scissor{};
         scissor.offset = { 0, 0 };
-        scissor.extent = extent;
-        vkCmdSetScissor(commandBuffers[currentFrame], 0, 1, &scissor);
+        scissor.extent = framecomp.extent;
+        vkCmdSetScissor(framecomp.commandBuffers[framecomp.currentFrame], 0, 1, &scissor);
 
-        VkBuffer vertexBuffers[] = { vertexbuffer };
+        VkBuffer vertexBuffers[] = { framecomp.vertexbuffer };
         VkDeviceSize offsets[] = { 0 };
-        vkCmdBindVertexBuffers(commandBuffers[currentFrame], 0, 1, vertexBuffers, offsets);
+        vkCmdBindVertexBuffers(framecomp.commandBuffers[framecomp.currentFrame], 0, 1, vertexBuffers, offsets);
 
         VkVertexInputBindingDescription2EXT bindingDesc{};
         bindingDesc.sType = VK_STRUCTURE_TYPE_VERTEX_INPUT_BINDING_DESCRIPTION_2_EXT;
@@ -182,12 +187,12 @@ namespace vulkRendering {
         attributeDescs[1].format = VK_FORMAT_R32G32B32_SFLOAT;
         attributeDescs[1].offset = offsetof(Vertex, color);
 
-        if (fnCmdSetVertexInputEXT != nullptr) {
-            fnCmdSetVertexInputEXT(commandBuffers[currentFrame], 1, &bindingDesc, 2, attributeDescs);
+        if (framecomp.fnCmdSetVertexInputEXT != nullptr) {
+            framecomp.fnCmdSetVertexInputEXT(framecomp.commandBuffers[framecomp.currentFrame], 1, &bindingDesc, 2, attributeDescs);
         }
 
-        vkCmdDraw(commandBuffers[currentFrame], static_cast<uint32_t>(vertices.size()), 1, 0, 0); // 3 vertex = 1 üçgen
-        vkCmdEndRendering(commandBuffers[currentFrame]);
+        vkCmdDraw(framecomp.commandBuffers[framecomp.currentFrame], static_cast<uint32_t>(framecomp.vertices.size()), 1, 0, 0); // 3 vertex = 1 üçgen
+        vkCmdEndRendering(framecomp.commandBuffers[framecomp.currentFrame]);
 
         VkImageMemoryBarrier2 imageBarrier2{};
         imageBarrier2.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
@@ -207,21 +212,21 @@ namespace vulkRendering {
         dependencyInfo2.imageMemoryBarrierCount = 1;
         dependencyInfo2.pImageMemoryBarriers = &imageBarrier2;
 
-        vkCmdPipelineBarrier2(commandBuffers[currentFrame], &dependencyInfo2);
-        vkEndCommandBuffer(commandBuffers[currentFrame]);
+        vkCmdPipelineBarrier2(framecomp.commandBuffers[framecomp.currentFrame], &dependencyInfo2);
+        vkEndCommandBuffer(framecomp.commandBuffers[framecomp.currentFrame]);
 
         VkCommandBufferSubmitInfo commandBufferSubmitInfo{};
         commandBufferSubmitInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
-        commandBufferSubmitInfo.commandBuffer = commandBuffers[currentFrame];
+        commandBufferSubmitInfo.commandBuffer = framecomp.commandBuffers[framecomp.currentFrame];
 
         VkSemaphoreSubmitInfo waitSemaphoreInfo{};
         waitSemaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
-        waitSemaphoreInfo.semaphore = imageAvailableSemaphores[currentFrame];
+        waitSemaphoreInfo.semaphore = framecomp.imageAvailableSemaphores[framecomp.currentFrame];
         waitSemaphoreInfo.stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
 
         VkSemaphoreSubmitInfo signalSemaphoreInfo{};
         signalSemaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
-        signalSemaphoreInfo.semaphore = renderFinishedSemaphores[imageIndex];
+        signalSemaphoreInfo.semaphore = framecomp.renderFinishedSemaphores[imageIndex];
         signalSemaphoreInfo.stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
 
         VkSubmitInfo2 submitInfo{};
@@ -233,20 +238,20 @@ namespace vulkRendering {
         submitInfo.signalSemaphoreInfoCount = 1;
         submitInfo.pSignalSemaphoreInfos = &signalSemaphoreInfo;
 
-        vkQueueSubmit2(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]);
+        vkQueueSubmit2(framecomp.graphicsQueue, 1, &submitInfo, framecomp.inFlightFences[framecomp.currentFrame]);
 
         VkPresentInfoKHR presentInfo{};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = &renderFinishedSemaphores[imageIndex];
+        presentInfo.pWaitSemaphores = &framecomp.renderFinishedSemaphores[imageIndex];
 
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = &swapchain;
         presentInfo.pImageIndices = &imageIndex; 
 
-        vkQueuePresentKHR(presentQueue, &presentInfo);
+        vkQueuePresentKHR(framecomp.presentQueue, &presentInfo);
 
-        currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+        framecomp.currentFrame = (framecomp.currentFrame + 1) % framecomp.MAX_FRAMES_IN_FLIGHT;
     }
 
 }

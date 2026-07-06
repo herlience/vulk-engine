@@ -1,40 +1,32 @@
 #include "vulkBackend.h"
 
 namespace vulkBackend {
+	vulkSwapchain::SwapchainVariables swapchainvariables;
+	vulkDevice::QueueFamilyIndices indices;
+	VkCommandPool commandpool;
+	VkDeviceMemory vertexbuffermemory;
+
 	GLFWwindow* window;
 	VkInstance instance;
 	VkDebugUtilsMessengerEXT debugmessenger;
 	VkSurfaceKHR surface;
 	VkPhysicalDevice physicaldevice;
-	VkDevice logicaldevice;
-	vulkSwapchain::SwapchainVariables swapchainvariables;
-	std::vector<VkImageView> swapchainimageviews;
-	VkPipeline pipeline;
-	VkPipelineLayout pipelinelayout;
-	vulkDevice::QueueFamilyIndices indices;
-	VkBuffer vertexbuffer;
-	VkDeviceMemory vertexbuffermemory;
-	VkCommandPool commandpool;
-	std::vector<VkCommandBuffer> commandbuffers;
-	std::vector<VkSemaphore> imageavailablesemaphores;
-	std::vector<VkSemaphore> renderfinishedsemaphores;
-	std::vector<VkFence> inflightfences;
-	PFN_vkCmdSetVertexInputEXT fnCmdSetVertexInputEXT;
+	frameComponents framecomp;
 
-	VkQueue graphicsQueue;
-	VkQueue presentQueue;
 
 	VkShaderModule vertshadermodule;
 	VkShaderModule fragshadermodule;
-
-	const int MAX_FRAMES_IN_FLIGHT = 2;
-	size_t currentFrame = 0;
 
 	const int WIDTH = 800;
 	const int HEIGHT = 600;
 
 	void InitVulk() {
 		glfwInit();
+
+		framecomp.MAX_FRAMES_IN_FLIGHT = 2;
+		framecomp.currentFrame = 0;
+		framecomp.vertices = vertices;
+
 		instance = vulkInstance::create();
 		debugmessenger = vulkInstance::createDebugMessenger(instance);
 
@@ -43,22 +35,23 @@ namespace vulkBackend {
 
 		physicaldevice = vulkDevice::pickPhysicalDevice(instance, surface);
 		indices = vulkDevice::findQueueFamilies(physicaldevice, surface);
-		logicaldevice = vulkDevice::createLogicalDevice(surface, physicaldevice, indices, fnCmdSetVertexInputEXT);
+		framecomp.device = vulkDevice::createLogicalDevice(surface, physicaldevice, indices, framecomp.fnCmdSetVertexInputEXT);
 
-		swapchainvariables = vulkSwapchain::create(instance, physicaldevice, logicaldevice, window, surface, indices);
-		swapchainimageviews = vulkSwapchain::createImageViews(logicaldevice, swapchainvariables.images, swapchainvariables.format);
+		swapchainvariables = vulkSwapchain::create(instance, physicaldevice, framecomp.device, window, surface, indices);
+		framecomp.extent = swapchainvariables.extent;
+		framecomp.imageViews = vulkSwapchain::createImageViews(framecomp.device, swapchainvariables.images, swapchainvariables.format);
 
-		pipelinelayout = vulkGraphicsPipeline::CreatePipelineLayout(logicaldevice);
+		framecomp.layout = vulkGraphicsPipeline::CreatePipelineLayout(framecomp.device);
 		auto vertShaderCode = vulkShaderModule::readFile("res/Shaders/vert.spv");
 		auto fragShaderCode = vulkShaderModule::readFile("res/Shaders/frag.spv");
-		vertshadermodule = vulkShaderModule::createShaderModule(vertShaderCode, logicaldevice);
-		fragshadermodule = vulkShaderModule::createShaderModule(fragShaderCode, logicaldevice);
-		pipeline = vulkGraphicsPipeline::CreateGraphicsPipeline(logicaldevice, pipelinelayout, vertshadermodule, fragshadermodule, swapchainvariables.format);
+		vertshadermodule = vulkShaderModule::createShaderModule(vertShaderCode, framecomp.device);
+		fragshadermodule = vulkShaderModule::createShaderModule(fragShaderCode, framecomp.device);
+		framecomp.pipeline = vulkGraphicsPipeline::CreateGraphicsPipeline(framecomp.device, framecomp.layout, vertshadermodule, fragshadermodule, swapchainvariables.format);
 
-		commandpool = vulkRendering::createCommandPool(logicaldevice, indices.graphicsFamily.value());
+		commandpool = vulkRendering::createCommandPool(framecomp.device, indices.graphicsFamily.value());
 
-		graphicsQueue = vulkDevice::createGraphicsQueue(logicaldevice, indices);
-		presentQueue = vulkDevice::createPresentQueue(logicaldevice, indices);
+		framecomp.graphicsQueue = vulkDevice::createGraphicsQueue(framecomp.device, indices);
+		framecomp.presentQueue = vulkDevice::createPresentQueue(framecomp.device, indices);
 
 		VkBufferCreateInfo bufferInfo{};
 		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -66,53 +59,53 @@ namespace vulkBackend {
 		bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		vertexbuffer = vulkBuffer::createVertexBuffer(logicaldevice, vertexbuffermemory, bufferInfo, physicaldevice);
-		vulkBuffer::bindMemory(logicaldevice, vertexbuffer, vertexbuffermemory);
-		vulkBuffer::MapMemory(logicaldevice, vertexbuffermemory, vertices, bufferInfo);
+		framecomp.vertexbuffer = vulkBuffer::createVertexBuffer(framecomp.device, vertexbuffermemory, bufferInfo, physicaldevice);
+		vulkBuffer::bindMemory(framecomp.device, framecomp.vertexbuffer, vertexbuffermemory);
+		vulkBuffer::MapMemory(framecomp.device, vertexbuffermemory, vertices, bufferInfo);
 
-		commandbuffers.resize(MAX_FRAMES_IN_FLIGHT);
-		imageavailablesemaphores.resize(swapchainvariables.images.size());
-		renderfinishedsemaphores.resize(swapchainvariables.images.size());
-		inflightfences.resize(MAX_FRAMES_IN_FLIGHT);
+		framecomp.commandBuffers.resize(framecomp.MAX_FRAMES_IN_FLIGHT);
+		framecomp.imageAvailableSemaphores.resize(swapchainvariables.images.size());
+		framecomp.renderFinishedSemaphores.resize(swapchainvariables.images.size());
+		framecomp.inFlightFences.resize(framecomp.MAX_FRAMES_IN_FLIGHT);
 
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-			inflightfences[i] = vulkRendering::createFence(logicaldevice);
-			commandbuffers[i] = vulkRendering::allocateCommandBuffer(logicaldevice, commandpool);
+		for (size_t i = 0; i < framecomp.MAX_FRAMES_IN_FLIGHT; i++) {
+			framecomp.inFlightFences[i] = vulkRendering::createFence(framecomp.device);
+			framecomp.commandBuffers[i] = vulkRendering::allocateCommandBuffer(framecomp.device, commandpool);
 		}
 
 		for (size_t i = 0; i < swapchainvariables.images.size(); i++) {
-			imageavailablesemaphores[i] = vulkRendering::createSemaphore(logicaldevice);
-			renderfinishedsemaphores[i] = vulkRendering::createSemaphore(logicaldevice);
+			framecomp.imageAvailableSemaphores[i] = vulkRendering::createSemaphore(framecomp.device);
+			framecomp.renderFinishedSemaphores[i] = vulkRendering::createSemaphore(framecomp.device);
 		}
 	}
 	
 
 	void DestroyVulk() {
 		for (size_t i = 0; i < swapchainvariables.images.size(); i++) {
-			vkDestroySemaphore(logicaldevice, renderfinishedsemaphores[i], nullptr);
-			vkDestroySemaphore(logicaldevice, imageavailablesemaphores[i], nullptr);
+			vkDestroySemaphore(framecomp.device, framecomp.renderFinishedSemaphores[i], nullptr);
+			vkDestroySemaphore(framecomp.device, framecomp.imageAvailableSemaphores[i], nullptr);
 		}
 		
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-			vkDestroyFence(logicaldevice, inflightfences[i], nullptr);
+		for (size_t i = 0; i < framecomp.MAX_FRAMES_IN_FLIGHT; i++) {
+			vkDestroyFence(framecomp.device, framecomp.inFlightFences[i], nullptr);
 		}
-		vkDestroyCommandPool(logicaldevice, commandpool, nullptr);
+		vkDestroyCommandPool(framecomp.device, commandpool, nullptr);
 
-		vkDestroyBuffer(logicaldevice, vertexbuffer, nullptr);
-		vkFreeMemory(logicaldevice, vertexbuffermemory, nullptr);
+		vkDestroyBuffer(framecomp.device, framecomp.vertexbuffer, nullptr);
+		vkFreeMemory(framecomp.device, vertexbuffermemory, nullptr);
 
-		vkDestroyPipeline(logicaldevice, pipeline, nullptr);
-		vkDestroyShaderModule(logicaldevice, fragshadermodule, nullptr);
-		vkDestroyShaderModule(logicaldevice, vertshadermodule, nullptr);
-		vkDestroyPipelineLayout(logicaldevice, pipelinelayout, nullptr);
+		vkDestroyPipeline(framecomp.device, framecomp.pipeline, nullptr);
+		vkDestroyShaderModule(framecomp.device, fragshadermodule, nullptr);
+		vkDestroyShaderModule(framecomp.device, vertshadermodule, nullptr);
+		vkDestroyPipelineLayout(framecomp.device, framecomp.layout, nullptr);
 
-		for (auto imageView : swapchainimageviews) {
-			vkDestroyImageView(logicaldevice, imageView, nullptr);
+		for (auto imageView : framecomp.imageViews) {
+			vkDestroyImageView(framecomp.device, imageView, nullptr);
 		}
 
-		vkDestroySwapchainKHR(logicaldevice, swapchainvariables.swapchain, nullptr);
+		vkDestroySwapchainKHR(framecomp.device, swapchainvariables.swapchain, nullptr);
 
-		vkDestroyDevice(logicaldevice, nullptr);
+		vkDestroyDevice(framecomp.device, nullptr);
 
 		if (debugmessenger != VK_NULL_HANDLE) {
 			vulkInstance::clean(instance, debugmessenger);
@@ -127,31 +120,17 @@ namespace vulkBackend {
 
 	void RenderSingleFrame() {
 		vulkRendering::DrawFrame(
-			logicaldevice,
+			framecomp,
 			swapchainvariables.swapchain,
 			swapchainvariables.images,
-			swapchainimageviews,
 			swapchainvariables.format,       
-			swapchainvariables.extent,
-			pipeline,
-			pipelinelayout,
-			commandbuffers,
-			graphicsQueue,
-			presentQueue,
-			currentFrame,                    
-			MAX_FRAMES_IN_FLIGHT,            
-			imageavailablesemaphores,       
-			renderfinishedsemaphores,        
-			inflightfences, 
-			vertexbuffer,
-			vertices,
-			fnCmdSetVertexInputEXT
+			swapchainvariables.extent
 		);
 
 	}
 
 	void WaitIdle() {
-		vkDeviceWaitIdle(logicaldevice);
+		vkDeviceWaitIdle(framecomp.device);
 	}
 
 	
