@@ -36,21 +36,6 @@ namespace vulkRendering {
 	VkFence createFence(VkDevice device);
 
     void DrawFrame(
-        /*VkDevice device,
-        const std::vector<VkImageView>& imageViews,
-        VkPipeline pipeline,
-        VkPipelineLayout layout,
-        const std::vector<VkCommandBuffer>& commandBuffers,
-        VkQueue graphicsQueue,
-        VkQueue presentQueue,
-        size_t& currentFrame,
-        const int MAX_FRAMES_IN_FLIGHT,
-        const std::vector<VkSemaphore>& imageAvailableSemaphores,
-        const std::vector<VkSemaphore>& renderFinishedSemaphores,
-        const std::vector<VkFence>& inFlightFences,
-        VkBuffer vertexbuffer,
-        const std::vector<Vertex>& vertices,
-        PFN_vkCmdSetVertexInputEXT& fnCmdSetVertexInputEXT*/
         frameComponents& framecomp,
         VkSwapchainKHR swapchain,
         const std::vector<VkImage>& images,

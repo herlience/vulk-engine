@@ -1,10 +1,6 @@
 #include "vulkBackend.h"
 
 namespace vulkBackend {
-	vulkSwapchain::SwapchainVariables swapchainvariables;
-	vulkDevice::QueueFamilyIndices indices;
-	VkCommandPool commandpool;
-	VkDeviceMemory vertexbuffermemory;
 
 	GLFWwindow* window;
 	VkInstance instance;
@@ -13,6 +9,10 @@ namespace vulkBackend {
 	VkPhysicalDevice physicaldevice;
 	frameComponents framecomp;
 
+	vulkSwapchain::SwapchainVariables swapchainvariables;
+	vulkDevice::QueueFamilyIndices indices;
+	VkCommandPool commandpool;
+	VkDeviceMemory vertexbuffermemory;
 
 	VkShaderModule vertshadermodule;
 	VkShaderModule fragshadermodule;
