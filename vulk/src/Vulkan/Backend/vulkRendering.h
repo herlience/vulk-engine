@@ -1,17 +1,17 @@
 #pragma once
-
-#include <vulkan/vulkan.h>
 #include "vulkSwapchain.h"
+#include <vulkan/vulkan.h>
 #include <vector>
 #include "vulkBuffer.h"
 
-struct frameComponents {
+struct VulkComponents {
+    VkInstance instance;
+    VkDebugUtilsMessengerEXT debugmessenger;
+    VkSurfaceKHR surface;
+    VkPhysicalDevice physicaldevice;
     VkDevice device;
-    VkSwapchainKHR swapchain;
-    std::vector<VkImage> images;
+    SwapchainVariables // vulkTypes'a eklenecek düzenlenecek
     std::vector<VkImageView> imageViews;
-    VkFormat swapchainFormat;
-    VkExtent2D extent;
     VkPipeline pipeline;
     VkPipelineLayout layout;
     std::vector<VkCommandBuffer> commandBuffers;
@@ -23,6 +23,8 @@ struct frameComponents {
     std::vector<VkSemaphore> renderFinishedSemaphores;
     std::vector<VkFence> inFlightFences;
     VkBuffer vertexbuffer;
+    VkCommandPool commandpool;
+    VkDeviceMemory vertexbuffermemory;
     std::vector<Vertex> vertices;
     PFN_vkCmdSetVertexInputEXT fnCmdSetVertexInputEXT;
 };
@@ -36,7 +38,7 @@ namespace vulkRendering {
 	VkFence createFence(VkDevice device);
 
     void DrawFrame(
-        frameComponents& framecomp,
+        VulkComponents& vulkcomp,
         VkSwapchainKHR swapchain,
         const std::vector<VkImage>& images,
         VkFormat swapchainFormat,
