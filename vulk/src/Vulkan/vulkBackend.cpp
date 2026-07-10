@@ -4,7 +4,7 @@ namespace vulkBackend {
 
 	GLFWwindow* window;
 
-	vulkSwapchain::SwapchainVariables swapchainvariables;
+	SwapchainVariables swapchainvariables;
 	vulkDevice::QueueFamilyIndices indices;
 	VulkComponents vulkcomp;
 
@@ -32,7 +32,7 @@ namespace vulkBackend {
 		vulkcomp.device = vulkDevice::createLogicalDevice(vulkcomp.surface, vulkcomp.physicaldevice, indices, vulkcomp.fnCmdSetVertexInputEXT);
 
 		swapchainvariables = vulkSwapchain::create(vulkcomp.instance, vulkcomp.physicaldevice, vulkcomp.device, window, vulkcomp.surface, indices);
-		vulkcomp.extent = swapchainvariables.extent;
+		vulkcomp.swapchainvariables = swapchainvariables;
 		vulkcomp.imageViews = vulkSwapchain::createImageViews(vulkcomp.device, swapchainvariables.images, swapchainvariables.format);
 
 		vulkcomp.layout = vulkGraphicsPipeline::CreatePipelineLayout(vulkcomp.device);

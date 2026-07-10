@@ -1,7 +1,7 @@
 #pragma once
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/include/glfw3.h>
-
+#include "vulkTypes.h"
 #include "Backend/vulkInstance.h"
 #include "Backend/vulkDevice.h"
 #include "Backend/vulkSwapchain.h"
