@@ -1,8 +1,26 @@
 #pragma once
+
+#define VK_CHECK(x)                                                     \
+    do {                                                                \
+        VkResult err = x;                                               \
+        if (err) {                                                      \
+             fmt::print("Detected Vulkan error: {}", string_VkResult(err)); \
+            abort();                                                    \
+        }                                                               \
+    } while (0)
+
+#define FMT_HEADER_ONLY
+#include <fmt/core.h>
+
 #include <vulkan/vulkan.h>
+#include <VMA/vk_mem_alloc.h>
+#include <vulkan/vk_enum_string_helper.h>
 #include <vector>
 #include <glm/glm.hpp>
 #include <array>
+#include <iostream>
+#include <string>
+#include <optional>
 
 struct SwapchainVariables {
     VkSwapchainKHR swapchain = VK_NULL_HANDLE;
@@ -17,29 +35,39 @@ struct SwapChainSupportDetails {
     std::vector<VkPresentModeKHR> presentModes;
 };
 
+struct QueueFamilyIndices {
+    std::optional<uint32_t> graphicsFamily;
+    std::optional<uint32_t> presentFamily;
+
+    bool isComplete() const {
+        return graphicsFamily.has_value() && presentFamily.has_value();
+    }
+};
+
 struct Vertex {
-    glm::vec2 pos;
-    glm::vec3 color;
+    glm::vec3 pos;
+    float uv_x;
+    glm::vec3 normal;
+    float uv_y;
+    glm::vec4 color;
+};
 
-    static VkVertexInputBindingDescription getBindingDescription() {
-        VkVertexInputBindingDescription bindingDescription{};
-        bindingDescription.binding = 0;
-        bindingDescription.stride = sizeof(Vertex);
-        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+struct AllocatedBuffer {
+    VkBuffer buffer;
+    VmaAllocation allocation;
+    VmaAllocationInfo info;
+};
 
+struct GPUMeshBuffers {
 
-        return bindingDescription;
-    }
+    AllocatedBuffer indexBuffer;
+    AllocatedBuffer vertexBuffer;
+    VkDeviceAddress vertexBufferAddress;
+};
 
-    static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
-        std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
-        attributeDescriptions[1].binding = 0;
-        attributeDescriptions[1].location = 1;
-        attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[1].offset = offsetof(Vertex, color);
-
-        return attributeDescriptions;
-    }
+struct GPUDrawPushConstants {
+    glm::mat4 worldMatrix;
+    VkDeviceAddress vertexBuffer;
 };
 
 struct VulkComponents {
@@ -48,7 +76,7 @@ struct VulkComponents {
     VkSurfaceKHR surface;
     VkPhysicalDevice physicaldevice;
     VkDevice device;
-    SwapchainVariables swapchainvariables;  // vulkTypes'a eklenecek düzenlenecek
+    SwapchainVariables swapchainvariables;
     std::vector<VkImageView> imageViews;
     VkPipeline pipeline;
     VkPipelineLayout layout;

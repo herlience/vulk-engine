@@ -1,50 +1,93 @@
 #include "vulkBuffer.h"
 
 namespace vulkBuffer {
-	VkBuffer createVertexBuffer(VkDevice device, VkDeviceMemory& vertexbuffermemory, VkBufferCreateInfo bufferInfo, VkPhysicalDevice physicaldevice) {
-		VkBuffer vertexbuffer = VK_NULL_HANDLE;
+    AllocatedBuffer create_buffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VmaAllocator _allocator) {
+        VkBufferCreateInfo bufferInfo = { .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+        bufferInfo.pNext = nullptr;
+        bufferInfo.size = allocSize;
 
-        if (vkCreateBuffer(device, &bufferInfo, nullptr, &vertexbuffer) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create vertex buffer!");
-        }
+        bufferInfo.usage = usage;
 
-        VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(device, vertexbuffer, &memRequirements);
+        VmaAllocationCreateInfo vmaallocInfo = {};
+        vmaallocInfo.usage = memoryUsage;
+        vmaallocInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+        AllocatedBuffer newBuffer;
 
-        VkMemoryAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, physicaldevice);
+        VK_CHECK(vmaCreateBuffer(_allocator, &bufferInfo, &vmaallocInfo, &newBuffer.buffer, &newBuffer.allocation, &newBuffer.info));
 
-        if (vkAllocateMemory(device, &allocInfo, nullptr, &vertexbuffermemory) != VK_SUCCESS) {
-            throw std::runtime_error("failed to allocate vertex buffer memory!");
-        }
-
-        return vertexbuffer;
-	}
-
-    void MapMemory(VkDevice device, VkDeviceMemory& buffermemory, const std::vector<Vertex>& vertices, VkBufferCreateInfo bufferInfo) {
-        void* data;
-        vkMapMemory(device, buffermemory, 0, bufferInfo.size, 0, &data);
-        memcpy(data, vertices.data(), (size_t)bufferInfo.size);
-        vkUnmapMemory(device, buffermemory);
+        return newBuffer;
     }
 
-    void bindMemory(VkDevice device, VkBuffer vertexbuffer, VkDeviceMemory& vertexbuffermemory) {
-        vkBindBufferMemory(device, vertexbuffer, vertexbuffermemory, 0);
+    void destroy_buffer(const AllocatedBuffer& buffer, VmaAllocator _allocator) {
+        vmaDestroyBuffer(_allocator, buffer.buffer, buffer.allocation);
     }
 
-    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice physicalDevice) {
-        VkPhysicalDeviceMemoryProperties memProperties;
-        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+    GPUMeshBuffers uploadMesh(VkDevice _device, std::span<uint32_t> indices, std::span<Vertex> vertices, VmaAllocator _allocator, VkCommandPool commandPool, VkQueue graphicsQueue)
+    {
+        const size_t vertexBufferSize = vertices.size() * sizeof(Vertex);
+        const size_t indexBufferSize = indices.size() * sizeof(uint32_t);
 
-        for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-            if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-                return i;
-            }
-        }
+        GPUMeshBuffers newSurface;
 
-        throw std::runtime_error("failed to find suitable memory type!");
+        //create vertex buffer
+        newSurface.vertexBuffer = create_buffer(vertexBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+            VMA_MEMORY_USAGE_GPU_ONLY, _allocator);
+
+        //find the adress of the vertex buffer
+        VkBufferDeviceAddressInfo deviceAdressInfo{ .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,.buffer = newSurface.vertexBuffer.buffer };
+        newSurface.vertexBufferAddress = vkGetBufferDeviceAddress(_device, &deviceAdressInfo);
+
+        //create index buffer
+        newSurface.indexBuffer = create_buffer(indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+            VMA_MEMORY_USAGE_GPU_ONLY, _allocator);
+
+        AllocatedBuffer staging = create_buffer(vertexBufferSize + indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY, _allocator);
+
+        void* data = staging.info.pMappedData;
+
+
+        memcpy(data, vertices.data(), vertexBufferSize);
+        memcpy((char*)data + vertexBufferSize, indices.data(), indexBufferSize);
+
+        VkCommandBufferAllocateInfo allocInfo{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
+        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocInfo.commandPool = commandPool;
+        allocInfo.commandBufferCount = 1;
+
+        VkCommandBuffer cmd;
+        vkAllocateCommandBuffers(_device, &allocInfo, &cmd);
+
+        VkCommandBufferBeginInfo beginInfo{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT; 
+        vkBeginCommandBuffer(cmd, &beginInfo);
+
+        
+        VkBufferCopy vertexCopy{ 0 };
+        vertexCopy.dstOffset = 0;
+        vertexCopy.srcOffset = 0;
+        vertexCopy.size = vertexBufferSize;
+        vkCmdCopyBuffer(cmd, staging.buffer, newSurface.vertexBuffer.buffer, 1, &vertexCopy);
+
+        VkBufferCopy indexCopy{ 0 };
+        indexCopy.dstOffset = 0;
+        indexCopy.srcOffset = vertexBufferSize;
+        indexCopy.size = indexBufferSize;
+        vkCmdCopyBuffer(cmd, staging.buffer, newSurface.indexBuffer.buffer, 1, &indexCopy);
+
+        vkEndCommandBuffer(cmd);
+        
+        VkSubmitInfo submitInfo{ .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO };
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &cmd;
+
+        vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(graphicsQueue); 
+        
+        vkFreeCommandBuffers(_device, commandPool, 1, &cmd);
+
+        destroy_buffer(staging, _allocator);
+
+        return newSurface;
 
     }
 }

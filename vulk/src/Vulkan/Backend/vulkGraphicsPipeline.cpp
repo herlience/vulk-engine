@@ -24,6 +24,10 @@ namespace vulkGraphicsPipeline {
         
         VkPipelineVertexInputStateCreateInfo vertexInputInfo = {}; 
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+        vertexInputInfo.vertexBindingDescriptionCount = 0;
+        vertexInputInfo.pVertexBindingDescriptions = nullptr;
+        vertexInputInfo.vertexAttributeDescriptionCount = 0;
+        vertexInputInfo.pVertexAttributeDescriptions = nullptr;
 
         VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
         inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -68,20 +72,19 @@ namespace vulkGraphicsPipeline {
 
         VkDynamicState dynamicStates[] = {
             VK_DYNAMIC_STATE_VIEWPORT,
-            VK_DYNAMIC_STATE_SCISSOR,
-            VK_DYNAMIC_STATE_VERTEX_INPUT_EXT
+            VK_DYNAMIC_STATE_SCISSOR
         };
 
         VkPipelineDynamicStateCreateInfo dynamicState = {};
         dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-        dynamicState.dynamicStateCount = 3;
+        dynamicState.dynamicStateCount = 2;
         dynamicState.pDynamicStates = dynamicStates;
 
         VkGraphicsPipelineCreateInfo pipelineInfo = {};
         pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
         pipelineInfo.stageCount = 2;
         pipelineInfo.pStages = shaderStages;
-        pipelineInfo.pVertexInputState = nullptr;
+        pipelineInfo.pVertexInputState = &vertexInputInfo;
         pipelineInfo.pInputAssemblyState = &inputAssembly;
         pipelineInfo.pViewportState = &viewportState;
         pipelineInfo.pRasterizationState = &rasterizer;
@@ -109,12 +112,17 @@ namespace vulkGraphicsPipeline {
     }
 
     VkPipelineLayout CreatePipelineLayout(VkDevice device) {
+        VkPushConstantRange push_constant;
+        push_constant.offset = 0;
+        push_constant.size = sizeof(GPUDrawPushConstants);
+        push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
         VkPipelineLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         layoutInfo.setLayoutCount = 0;
         layoutInfo.pSetLayouts = nullptr;
-        layoutInfo.pushConstantRangeCount = 0;
-        layoutInfo.pPushConstantRanges = nullptr;
+        layoutInfo.pushConstantRangeCount = 1;
+        layoutInfo.pPushConstantRanges = &push_constant;
 
         VkPipelineLayout pipelineLayout;
         if (vkCreatePipelineLayout(device, &layoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {

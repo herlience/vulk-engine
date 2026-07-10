@@ -5,8 +5,11 @@ namespace vulkBackend {
 	GLFWwindow* window;
 
 	SwapchainVariables swapchainvariables;
-	vulkDevice::QueueFamilyIndices indices;
+	QueueFamilyIndices indices;
 	VulkComponents vulkcomp;
+
+	GPUMeshBuffers meshbuffers;
+	VmaAllocator allocator;
 
 	VkShaderModule vertshadermodule;
 	VkShaderModule fragshadermodule;
@@ -47,15 +50,22 @@ namespace vulkBackend {
 		vulkcomp.graphicsQueue = vulkDevice::createGraphicsQueue(vulkcomp.device, indices);
 		vulkcomp.presentQueue = vulkDevice::createPresentQueue(vulkcomp.device, indices);
 
-		VkBufferCreateInfo bufferInfo{};
-		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = sizeof(vertices[0]) * vertices.size();
-		bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		VmaVulkanFunctions vulkanFunctions = {};
+		vulkanFunctions.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
+		vulkanFunctions.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
 
-		vulkcomp.vertexbuffer = vulkBuffer::createVertexBuffer(vulkcomp.device, vulkcomp.vertexbuffermemory, bufferInfo, vulkcomp.physicaldevice);
-		vulkBuffer::bindMemory(vulkcomp.device, vulkcomp.vertexbuffer, vulkcomp.vertexbuffermemory);
-		vulkBuffer::MapMemory(vulkcomp.device, vulkcomp.vertexbuffermemory, vertices, bufferInfo);
+		VmaAllocatorCreateInfo allocatorCreateInfo = {};
+		allocatorCreateInfo.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
+		allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_2;
+		allocatorCreateInfo.physicalDevice = vulkcomp.physicaldevice;
+		allocatorCreateInfo.device = vulkcomp.device;
+		allocatorCreateInfo.instance = vulkcomp.instance;
+		allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
+		allocatorCreateInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+
+		vmaCreateAllocator(&allocatorCreateInfo, &allocator);
+
+		meshbuffers = vulkBuffer::uploadMesh(vulkcomp.device, recindices, vulkcomp.vertices, allocator, vulkcomp.commandpool, vulkcomp.graphicsQueue);
 
 		vulkcomp.commandBuffers.resize(vulkcomp.MAX_FRAMES_IN_FLIGHT);
 		vulkcomp.imageAvailableSemaphores.resize(swapchainvariables.images.size());
@@ -75,6 +85,16 @@ namespace vulkBackend {
 	
 
 	void DestroyVulk() {
+
+		if (meshbuffers.indexBuffer.buffer != VK_NULL_HANDLE) {
+			vmaDestroyBuffer(allocator, meshbuffers.indexBuffer.buffer, meshbuffers.indexBuffer.allocation);
+		}
+		if (meshbuffers.vertexBuffer.buffer != VK_NULL_HANDLE) {
+			vmaDestroyBuffer(allocator, meshbuffers.vertexBuffer.buffer, meshbuffers.vertexBuffer.allocation);
+		}
+
+		vmaDestroyAllocator(allocator);
+
 		for (size_t i = 0; i < swapchainvariables.images.size(); i++) {
 			vkDestroySemaphore(vulkcomp.device, vulkcomp.renderFinishedSemaphores[i], nullptr);
 			vkDestroySemaphore(vulkcomp.device, vulkcomp.imageAvailableSemaphores[i], nullptr);
@@ -117,8 +137,11 @@ namespace vulkBackend {
 			vulkcomp,
 			swapchainvariables.swapchain,
 			swapchainvariables.images,
-			swapchainvariables.format,       
-			swapchainvariables.extent
+			swapchainvariables.format,
+			swapchainvariables.extent,
+			vertices,
+			meshbuffers,
+			recindices
 		);
 
 	}

@@ -2,6 +2,10 @@
 #include "vulkBuffer.h"
 #include <iostream>
 #include <vector>
+#include <span>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace vulkRendering {
 	VkCommandPool createCommandPool(VkDevice device, uint32_t queueFamilyIndex) {
@@ -64,7 +68,10 @@ namespace vulkRendering {
         VkSwapchainKHR swapchain,
         const std::vector<VkImage>& images,
         VkFormat swapchainFormat,
-        VkExtent2D extent
+        VkExtent2D extent,
+        std::span<Vertex> vertices,
+        GPUMeshBuffers meshbuffers,
+        std::span<uint32_t> recindices
     ) {
         vkWaitForFences(vulkcomp.device, 1, &vulkcomp.inFlightFences[vulkcomp.currentFrame], VK_TRUE, UINT64_MAX);
         vkResetFences(vulkcomp.device, 1, &vulkcomp.inFlightFences[vulkcomp.currentFrame]);
@@ -140,39 +147,35 @@ namespace vulkRendering {
         scissor.extent = vulkcomp.swapchainvariables.extent;
         vkCmdSetScissor(vulkcomp.commandBuffers[vulkcomp.currentFrame], 0, 1, &scissor);
 
-        VkBuffer vertexBuffers[] = { vulkcomp.vertexbuffer };
-        VkDeviceSize offsets[] = { 0 };
-        vkCmdBindVertexBuffers(vulkcomp.commandBuffers[vulkcomp.currentFrame], 0, 1, vertexBuffers, offsets);
+        glm::mat4 Model = glm::mat4(1.0f);
 
-        VkVertexInputBindingDescription2EXT bindingDesc{};
-        bindingDesc.sType = VK_STRUCTURE_TYPE_VERTEX_INPUT_BINDING_DESCRIPTION_2_EXT;
-        bindingDesc.binding = 0;
-        bindingDesc.stride = sizeof(Vertex);
-        bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-        bindingDesc.divisor = 1;
+       
+        glm::mat4 View = glm::lookAt(
+            glm::vec3(0.0f, 0.0f, 5.0f),  
+            glm::vec3(0.0f, 0.0f, 0.0f),  
+            glm::vec3(0.0f, 1.0f, 0.0f)   
+        );
 
-        
-        VkVertexInputAttributeDescription2EXT attributeDescs[2]{};
+        float aspect_ratio = 1700.0f / 900.0f;
+        glm::mat4 Projection = glm::perspective(glm::radians(70.0f), aspect_ratio, 0.1f, 200.0f);
+        Projection[1][1] *= -1.0f;
+        glm::mat4 MVP = Projection * View * Model;
 
-        // Pozisyon verisi
-        attributeDescs[0].sType = VK_STRUCTURE_TYPE_VERTEX_INPUT_ATTRIBUTE_DESCRIPTION_2_EXT;
-        attributeDescs[0].location = 0; 
-        attributeDescs[0].binding = 0;
-        attributeDescs[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescs[0].offset = offsetof(Vertex, pos); 
 
-        // Renk verisi
-        attributeDescs[1].sType = VK_STRUCTURE_TYPE_VERTEX_INPUT_ATTRIBUTE_DESCRIPTION_2_EXT;
-        attributeDescs[1].location = 1; 
-        attributeDescs[1].binding = 0;
-        attributeDescs[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescs[1].offset = offsetof(Vertex, color);
+        GPUDrawPushConstants pushData{};
+        pushData.worldMatrix = MVP; 
+        pushData.vertexBuffer = meshbuffers.vertexBufferAddress;
 
-        if (vulkcomp.fnCmdSetVertexInputEXT != nullptr) {
-            vulkcomp.fnCmdSetVertexInputEXT(vulkcomp.commandBuffers[vulkcomp.currentFrame], 1, &bindingDesc, 2, attributeDescs);
-        }
+        vkCmdPushConstants(vulkcomp.commandBuffers[vulkcomp.currentFrame], vulkcomp.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushData);     
 
-        vkCmdDraw(vulkcomp.commandBuffers[vulkcomp.currentFrame], static_cast<uint32_t>(vulkcomp.vertices.size()), 1, 0, 0); // 3 vertex = 1 üçgen
+        vkCmdBindIndexBuffer(
+            vulkcomp.commandBuffers[vulkcomp.currentFrame],
+            meshbuffers.indexBuffer.buffer,
+            0,
+            VK_INDEX_TYPE_UINT32
+        );
+
+        vkCmdDrawIndexed(vulkcomp.commandBuffers[vulkcomp.currentFrame], static_cast<uint32_t>(recindices.size()), 1, 0, 0, 0); // 3 vertex = 1 üçgen
         vkCmdEndRendering(vulkcomp.commandBuffers[vulkcomp.currentFrame]);
 
         VkImageMemoryBarrier2 imageBarrier2{};

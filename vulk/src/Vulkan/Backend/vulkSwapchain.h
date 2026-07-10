@@ -10,7 +10,7 @@
 
 namespace vulkSwapchain {
 
-    SwapchainVariables create(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice logicalDevice, GLFWwindow* window, VkSurfaceKHR surface, vulkDevice::QueueFamilyIndices indices);
+    SwapchainVariables create(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice logicalDevice, GLFWwindow* window, VkSurfaceKHR surface, QueueFamilyIndices indices);
     std::vector<VkImageView> createImageViews(VkDevice logicalDevice, const std::vector<VkImage>& swapchainImages, VkFormat vulkSwapchainImageFormat);
     void clean(VkDevice logicalDevice, VkSwapchainKHR& vulkSwapchain, std::vector<VkImageView>& swapchainImageViews, std::vector<VkImage>& swapchainImages);
 

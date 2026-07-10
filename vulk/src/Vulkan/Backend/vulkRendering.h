@@ -18,7 +18,10 @@ namespace vulkRendering {
         VkSwapchainKHR swapchain,
         const std::vector<VkImage>& images,
         VkFormat swapchainFormat,
-        VkExtent2D extent
+        VkExtent2D extent,
+        std::span<Vertex> vertices,
+        GPUMeshBuffers meshbuffers,
+        std::span<uint32_t> recindices
         );
 }
 

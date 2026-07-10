@@ -52,10 +52,15 @@ namespace vulkDevice {
 
         VkPhysicalDeviceFeatures deviceFeatures{};
 
+        VkPhysicalDeviceVulkan12Features features12 = {};
+        features12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+        features12.bufferDeviceAddress = VK_TRUE;
+        features12.pNext = nullptr;
+
         VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT dynamicVertexFeatures{};
         dynamicVertexFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT;
         dynamicVertexFeatures.vertexInputDynamicState = VK_TRUE;
-        dynamicVertexFeatures.pNext = nullptr; 
+        dynamicVertexFeatures.pNext = &features12; 
 
         VkPhysicalDeviceSynchronization2Features sync2Features{};
         sync2Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;

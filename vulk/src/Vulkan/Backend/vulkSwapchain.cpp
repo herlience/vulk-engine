@@ -9,7 +9,7 @@
 
 namespace vulkSwapchain {
     
-    SwapchainVariables create(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice logicalDevice, GLFWwindow* window, VkSurfaceKHR surface, vulkDevice::QueueFamilyIndices indices) {
+    SwapchainVariables create(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice logicalDevice, GLFWwindow* window, VkSurfaceKHR surface, QueueFamilyIndices indices) {
         SwapchainVariables variables;
         std::vector<VkImage> swapchainImages;
         VkSwapchainKHR vulkSwapchain;
