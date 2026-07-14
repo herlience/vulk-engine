@@ -44,14 +44,6 @@ struct QueueFamilyIndices {
     }
 };
 
-struct Vertex {
-    glm::vec3 pos;
-    float uv_x;
-    glm::vec3 normal;
-    float uv_y;
-    glm::vec4 color;
-};
-
 struct AllocatedBuffer {
     VkBuffer buffer;
     VmaAllocation allocation;
@@ -59,15 +51,9 @@ struct AllocatedBuffer {
 };
 
 struct GPUMeshBuffers {
-
     AllocatedBuffer indexBuffer;
     AllocatedBuffer vertexBuffer;
     VkDeviceAddress vertexBufferAddress;
-};
-
-struct GPUDrawPushConstants {
-    glm::mat4 worldMatrix;
-    VkDeviceAddress vertexBuffer;
 };
 
 struct VulkComponents {

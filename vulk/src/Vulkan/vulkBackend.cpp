@@ -132,24 +132,13 @@ namespace vulkBackend {
 		glfwTerminate();
 	}
 
-	void RenderSingleFrame() {
-		vulkRendering::DrawFrame(
-			vulkcomp,
-			swapchainvariables.swapchain,
-			swapchainvariables.images,
-			swapchainvariables.format,
-			swapchainvariables.extent,
-			vertices,
-			meshbuffers,
-			recindices
-		);
-
-	}
-
 	void WaitIdle() {
 		vkDeviceWaitIdle(vulkcomp.device);
 	}
 
 	
 	GLFWwindow* getwindow() { return window; }
+	VulkComponents getvulkcomp() { return vulkcomp; }
+	SwapchainVariables getswapvar() { return swapchainvariables; }
+
 }

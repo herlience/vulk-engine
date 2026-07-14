@@ -16,7 +16,7 @@ namespace vulkanWindow {
 	GLFWwindow* createWindow( int WIDTH, int HEIGHT) {
 		GLFWwindow* vulk_window = nullptr;
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
 		vulk_window = glfwCreateWindow(WIDTH, HEIGHT, "vulk", nullptr, nullptr);
 

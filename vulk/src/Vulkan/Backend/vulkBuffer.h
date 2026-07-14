@@ -4,6 +4,7 @@
 #include <vulkan/vulkan.h>
 #include <VMA/vk_mem_alloc.h>
 #include <glm/glm.hpp>
+#include "../../Render/RendererTypes.h"
 #include <array>
 #include <vector>
 #include <iostream>
