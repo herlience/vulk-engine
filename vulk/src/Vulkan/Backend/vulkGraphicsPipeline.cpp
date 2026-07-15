@@ -7,7 +7,7 @@
 #include <iostream>
 
 namespace vulkGraphicsPipeline {
-    VkPipeline CreateGraphicsPipeline(VkDevice device, VkPipelineLayout pipelineLayout, VkShaderModule vertexShader, VkShaderModule fragmentShader, VkFormat swapchainFormat) {
+    pipevariables CreateGraphicsPipeline(VkDevice device, VkPipelineLayout pipelineLayout, VkShaderModule vertexShader, VkShaderModule fragmentShader, VkFormat swapchainFormat) {
         VkPipelineShaderStageCreateInfo shaderStages[2] = {};
 
         // Vertex Shader Stage
@@ -102,10 +102,13 @@ namespace vulkGraphicsPipeline {
         VkPipeline pipeline;
         if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS) {
             std::cout << "Failed to create graphics pipeline\n";
-            return VK_NULL_HANDLE;
+            return;
         }
 
-        return pipeline;
+        pipevariables pv;
+        pv.pipeline = pipeline;
+        pv.createinf = pipelineInfo;
+        return pv;
     }
     void DestroyPipeline(VkPipeline pipeline, VkDevice device) {
         vkDestroyPipeline(device, pipeline, nullptr);

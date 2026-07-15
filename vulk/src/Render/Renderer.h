@@ -10,7 +10,7 @@
 
 namespace Renderer
 {
-    std::vector<RenderObject> m_drawlist;
+    inline std::vector<RenderObject> m_drawlist;
 
     void addRenderObject(const RenderObject& obj) {
         m_drawlist.push_back(obj);

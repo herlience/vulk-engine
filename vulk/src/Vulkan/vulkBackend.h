@@ -3,6 +3,7 @@
 #include <GLFW/include/glfw3.h>
 #include <VMA/vk_mem_alloc.h>
 #include "vulkTypes.h"
+#include <imgui/imgui.h>
 #include "Backend/vulkInstance.h"
 #include "Backend/vulkDevice.h"
 #include "Backend/vulkSwapchain.h"

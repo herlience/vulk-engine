@@ -12,6 +12,9 @@
 #define FMT_HEADER_ONLY
 #include <fmt/core.h>
 
+#include "../Render/RendererTypes.h"
+#include "Backend/vulkGraphicsPipeline.h"
+
 #include <vulkan/vulkan.h>
 #include <VMA/vk_mem_alloc.h>
 #include <vulkan/vk_enum_string_helper.h>
@@ -27,6 +30,7 @@ struct SwapchainVariables {
     std::vector<VkImage> images;
     VkFormat format;
     VkExtent2D extent;
+    uint32_t imagecount;
 };
 
 struct SwapChainSupportDetails {
@@ -50,12 +54,6 @@ struct AllocatedBuffer {
     VmaAllocationInfo info;
 };
 
-struct GPUMeshBuffers {
-    AllocatedBuffer indexBuffer;
-    AllocatedBuffer vertexBuffer;
-    VkDeviceAddress vertexBufferAddress;
-};
-
 struct VulkComponents {
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugmessenger;
@@ -64,7 +62,7 @@ struct VulkComponents {
     VkDevice device;
     SwapchainVariables swapchainvariables;
     std::vector<VkImageView> imageViews;
-    VkPipeline pipeline;
+    pipevariables pipelinevar;
     VkPipelineLayout layout;
     std::vector<VkCommandBuffer> commandBuffers;
     VkQueue graphicsQueue;

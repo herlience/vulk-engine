@@ -8,7 +8,6 @@ namespace vulkBackend {
 	QueueFamilyIndices indices;
 	VulkComponents vulkcomp;
 
-	GPUMeshBuffers meshbuffers;
 	VmaAllocator allocator;
 
 	VkShaderModule vertshadermodule;
@@ -43,7 +42,7 @@ namespace vulkBackend {
 		auto fragShaderCode = vulkShaderModule::readFile("res/Shaders/frag.spv");
 		vertshadermodule = vulkShaderModule::createShaderModule(vertShaderCode, vulkcomp.device);
 		fragshadermodule = vulkShaderModule::createShaderModule(fragShaderCode, vulkcomp.device);
-		vulkcomp.pipeline = vulkGraphicsPipeline::CreateGraphicsPipeline(vulkcomp.device, vulkcomp.layout, vertshadermodule, fragshadermodule, swapchainvariables.format);
+		vulkcomp.pipelinevar = vulkGraphicsPipeline::CreateGraphicsPipeline(vulkcomp.device, vulkcomp.layout, vertshadermodule, fragshadermodule, swapchainvariables.format);
 
 		vulkcomp.commandpool = vulkRendering::createCommandPool(vulkcomp.device, indices.graphicsFamily.value());
 
@@ -65,8 +64,6 @@ namespace vulkBackend {
 
 		vmaCreateAllocator(&allocatorCreateInfo, &allocator);
 
-		meshbuffers = vulkBuffer::uploadMesh(vulkcomp.device, recindices, vulkcomp.vertices, allocator, vulkcomp.commandpool, vulkcomp.graphicsQueue);
-
 		vulkcomp.commandBuffers.resize(vulkcomp.MAX_FRAMES_IN_FLIGHT);
 		vulkcomp.imageAvailableSemaphores.resize(swapchainvariables.images.size());
 		vulkcomp.renderFinishedSemaphores.resize(swapchainvariables.images.size());
@@ -85,14 +82,6 @@ namespace vulkBackend {
 	
 
 	void DestroyVulk() {
-
-		if (meshbuffers.indexBuffer.buffer != VK_NULL_HANDLE) {
-			vmaDestroyBuffer(allocator, meshbuffers.indexBuffer.buffer, meshbuffers.indexBuffer.allocation);
-		}
-		if (meshbuffers.vertexBuffer.buffer != VK_NULL_HANDLE) {
-			vmaDestroyBuffer(allocator, meshbuffers.vertexBuffer.buffer, meshbuffers.vertexBuffer.allocation);
-		}
-
 		vmaDestroyAllocator(allocator);
 
 		for (size_t i = 0; i < swapchainvariables.images.size(); i++) {
@@ -108,7 +97,7 @@ namespace vulkBackend {
 		vkDestroyBuffer(vulkcomp.device, vulkcomp.vertexbuffer, nullptr);
 		vkFreeMemory(vulkcomp.device, vulkcomp.vertexbuffermemory, nullptr);
 
-		vkDestroyPipeline(vulkcomp.device, vulkcomp.pipeline, nullptr);
+		vkDestroyPipeline(vulkcomp.device, vulkcomp.pipelinevar.pipeline, nullptr);
 		vkDestroyShaderModule(vulkcomp.device, fragshadermodule, nullptr);
 		vkDestroyShaderModule(vulkcomp.device, vertshadermodule, nullptr);
 		vkDestroyPipelineLayout(vulkcomp.device, vulkcomp.layout, nullptr);
@@ -139,6 +128,5 @@ namespace vulkBackend {
 	
 	GLFWwindow* getwindow() { return window; }
 	VulkComponents getvulkcomp() { return vulkcomp; }
-	SwapchainVariables getswapvar() { return swapchainvariables; }
-
+	QueueFamilyIndices getfamilyindex() { return indices; }
 }

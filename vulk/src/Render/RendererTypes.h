@@ -1,7 +1,7 @@
 #pragma once
 #include <vulkan/vulkan.h>
 #include <glm/glm.hpp>
-
+#include "../Vulkan/vulkTypes.h"
 
 struct GPUDrawPushConstants {
     glm::mat4 worldMatrix;
@@ -22,4 +22,16 @@ struct RenderObject {
     uint32_t firstIndex;
     glm::mat4 modelMatrix;
     uint64_t vertexBufferAddress;
+};
+
+struct GPUMeshBuffers {
+    AllocatedBuffer indexBuffer;
+    AllocatedBuffer vertexBuffer;
+    VkDeviceAddress vertexBufferAddress;
+};
+
+struct Mesh {
+    GPUMeshBuffers buffers;
+    uint32_t indexcount;
+    uint32_t vertexcount;
 };

@@ -1,9 +1,13 @@
 #pragma once
 #include <vulkan/vulkan.h>
 
+struct pipevariables {
+    VkPipeline pipeline;
+    VkGraphicsPipelineCreateInfo createinf;
+};
 
 namespace vulkGraphicsPipeline {
-    VkPipeline CreateGraphicsPipeline(VkDevice device, VkPipelineLayout pipelineLayout, VkShaderModule vertexShader, VkShaderModule fragmentShader, VkFormat swapchainFormat);
+    pipevariables CreateGraphicsPipeline(VkDevice device, VkPipelineLayout pipelineLayout, VkShaderModule vertexShader, VkShaderModule fragmentShader, VkFormat swapchainFormat);
     void DestroyPipeline(VkPipeline pipeline, VkDevice device);
     VkPipelineLayout CreatePipelineLayout(VkDevice device);
     void DestroyPipelineLayout(VkPipelineLayout pipelineLayout, VkDevice device);

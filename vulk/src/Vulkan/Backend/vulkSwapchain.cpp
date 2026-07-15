@@ -66,6 +66,7 @@ namespace vulkSwapchain {
         variables.extent = extent;
         variables.swapchain = vulkSwapchain;
         variables.images = swapchainImages;
+        variables.imagecount = imageCount;
 
         return variables;
     }

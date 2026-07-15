@@ -1,7 +1,6 @@
 #include "GameObject.h"
 
-namespace GameObject {
-	glm::mat4 getModelMatrix() {
+	glm::mat4 GameObject::getModelMatrix() const {
         glm::mat4 model = glm::translate(glm::mat4(1.0f), translation);
 
         model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -12,7 +11,7 @@ namespace GameObject {
         return model;
 	}
 
-	RenderObject getRenderState() {
+	RenderObject GameObject::getRenderState() {
         RenderObject obj{};
         obj.indexBuffer = indexBuffer;
         obj.indexCount = indexCount;
@@ -21,4 +20,5 @@ namespace GameObject {
         obj.vertexBufferAddress = vertexBufferAddress;
         return obj;
 	}
-}
+
+

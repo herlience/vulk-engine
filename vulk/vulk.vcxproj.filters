@@ -63,7 +63,13 @@
     <ClInclude Include="src\Render\RendererTypes.h">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
-    <ClInclude Include="src\Scene\SceneHandler.h">
+    <ClInclude Include="src\AssetHandler\AssetHandler.h">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Render\ObjectRenderer.h">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Render\imguiinit.h">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
   </ItemGroup>
@@ -116,7 +122,13 @@
     <ClCompile Include="src\Render\RendererTypes.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
-    <ClCompile Include="src\Scene\SceneHandler.cpp">
+    <ClCompile Include="src\AssetHandler\AssetHandler.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Render\ObjectRenderer.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Render\imguiinit.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
   </ItemGroup>
