@@ -8,8 +8,6 @@ namespace vulkBackend {
 	QueueFamilyIndices indices;
 	VulkComponents vulkcomp;
 
-	VmaAllocator allocator;
-
 	VkShaderModule vertshadermodule;
 	VkShaderModule fragshadermodule;
 
@@ -62,7 +60,9 @@ namespace vulkBackend {
 		allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
 		allocatorCreateInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 
-		vmaCreateAllocator(&allocatorCreateInfo, &allocator);
+		if (vmaCreateAllocator(&allocatorCreateInfo, &vulkcomp.allocator) != VK_SUCCESS) {
+			std::cout << "we got a problem about allocator" << std::endl;
+		}
 
 		vulkcomp.commandBuffers.resize(vulkcomp.MAX_FRAMES_IN_FLIGHT);
 		vulkcomp.imageAvailableSemaphores.resize(swapchainvariables.images.size());
@@ -82,7 +82,7 @@ namespace vulkBackend {
 	
 
 	void DestroyVulk() {
-		vmaDestroyAllocator(allocator);
+		vmaDestroyAllocator(vulkcomp.allocator);
 
 		for (size_t i = 0; i < swapchainvariables.images.size(); i++) {
 			vkDestroySemaphore(vulkcomp.device, vulkcomp.renderFinishedSemaphores[i], nullptr);

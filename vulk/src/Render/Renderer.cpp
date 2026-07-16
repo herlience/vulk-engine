@@ -68,7 +68,7 @@ namespace Renderer {
 
         vkCmdBeginRendering(vulkcomp.commandBuffers[vulkcomp.currentFrame], &renderingInfo);
 
-        vkCmdBindPipeline(vulkcomp.commandBuffers[vulkcomp.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vulkcomp.pipeline);
+        vkCmdBindPipeline(vulkcomp.commandBuffers[vulkcomp.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vulkcomp.pipelinevar.pipeline);
 
         VkViewport viewport{};
         viewport.x = 0.0f;

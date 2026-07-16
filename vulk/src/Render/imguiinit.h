@@ -8,14 +8,8 @@
 
 namespace Imgui {
 	void init(
-		VkInstance instance, 
-		VkPhysicalDevice physicaldevice, 
-		VkDevice device, 
-		QueueFamilyIndices familyindex, 
-		VkQueue graphicsqueue, 
-		VkDescriptorPool imguipool, 
-		SwapchainVariables swapchainvar,
 		VulkComponents vulkcomp,
+		QueueFamilyIndices familyindex,
 		GLFWwindow* window
 	);
 	void destroy();

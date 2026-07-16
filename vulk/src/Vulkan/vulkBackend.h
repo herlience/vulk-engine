@@ -17,9 +17,9 @@
 namespace vulkBackend {
 	void InitVulk();
 	void DestroyVulk();
-
-	void RenderSingleFrame();
 	void WaitIdle();
 
 	GLFWwindow* getwindow();
+	VulkComponents getvulkcomp();
+	QueueFamilyIndices getfamilyindex();
 }

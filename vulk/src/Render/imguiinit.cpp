@@ -11,14 +11,8 @@ namespace Imgui {
 	}
 
 	void init(
-		VkInstance instance,
-		VkPhysicalDevice physicaldevice,
-		VkDevice device,
-		QueueFamilyIndices familyindex,
-		VkQueue graphicsqueue,
-		VkDescriptorPool imguipool,
-		SwapchainVariables swapchainvar,
 		VulkComponents vulkcomp,
+		QueueFamilyIndices familyindex,
 		GLFWwindow* window
 	) {
 		IMGUI_CHECKVERSION();
@@ -28,21 +22,21 @@ namespace Imgui {
 		ImGui_ImplGlfw_InitForVulkan(window, true);
 
 		ImGui_ImplVulkan_InitInfo init_info = {};
-		init_info.Instance = instance;
-		init_info.PhysicalDevice = physicaldevice;
-		init_info.Device = device;
+		init_info.Instance = vulkcomp.instance;
+		init_info.PhysicalDevice = vulkcomp.physicaldevice;
+		init_info.Device = vulkcomp.device;
 		init_info.QueueFamily = familyindex.graphicsFamily.value();
-		init_info.Queue = graphicsqueue;
+		init_info.Queue = vulkcomp.graphicsQueue;
 		init_info.PipelineCache = VK_NULL_HANDLE;
 		init_info.DescriptorPool = VK_NULL_HANDLE;
-		init_info.MinImageCount = swapchainvar.imagecount;
-		init_info.ImageCount = swapchainvar.imagecount;
+		init_info.MinImageCount = vulkcomp.swapchainvariables.imagecount;
+		init_info.ImageCount = vulkcomp.swapchainvariables.imagecount;
 		init_info.UseDynamicRendering = true;
 		
 		VkPipelineRenderingCreateInfoKHR renderingCreateInfo{};
 		renderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
 		renderingCreateInfo.colorAttachmentCount = 1;
-		renderingCreateInfo.pColorAttachmentFormats = &swapchainvar.format;
+		renderingCreateInfo.pColorAttachmentFormats = &vulkcomp.swapchainvariables.format;
 
 		ImGui_ImplVulkan_PipelineInfo pipelineinfomain = {};
 		pipelineinfomain.PipelineRenderingCreateInfo = renderingCreateInfo;

@@ -77,5 +77,6 @@ struct VulkComponents {
     VkDeviceMemory vertexbuffermemory;
     std::vector<Vertex> vertices;
     PFN_vkCmdSetVertexInputEXT fnCmdSetVertexInputEXT;
+    VmaAllocator allocator;
 };
 
