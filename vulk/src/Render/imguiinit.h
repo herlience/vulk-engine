@@ -9,6 +9,7 @@
 #include <imgui_impl_vulkan.h>
 #include <imgui_impl_glfw.h>
 #include "../Vulkan/vulkTypes.h"
+#include "../Camera/Camera.h"
 #include <iostream>
 
 namespace Imgui {

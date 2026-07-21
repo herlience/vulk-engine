@@ -105,7 +105,9 @@ namespace Renderer {
         scissor.extent = vulkcomp.swapchainvariables.extent;
         vkCmdSetScissor(vulkcomp.commandBuffers[vulkcomp.currentFrame], 0, 1, &scissor);
 
-        glm::mat4 viewproj = CameraSystem::getViewProjectionMatrix();
+        float width = static_cast<float>(vulkcomp.swapchainvariables.extent.width);
+        float height = static_cast<float>(vulkcomp.swapchainvariables.extent.height);
+        glm::mat4 viewproj = CameraSystem::getViewProjectionMatrix(width, height);
 
         AssetHandler::syncpendingobjects();
 

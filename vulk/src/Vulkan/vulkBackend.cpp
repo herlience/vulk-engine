@@ -11,8 +11,8 @@ namespace vulkBackend {
 	VkShaderModule vertshadermodule;
 	VkShaderModule fragshadermodule;
 
-	const int WIDTH = 800;
-	const int HEIGHT = 600;
+	const int WIDTH = 1200;
+	const int HEIGHT = 800;
 
 	void InitVulk() {
 		glfwInit();
