@@ -7,7 +7,7 @@
 #include <iostream>
 
 namespace vulkGraphicsPipeline {
-    pipevariables CreateGraphicsPipeline(VkDevice device, VkPipelineLayout pipelineLayout, VkShaderModule vertexShader, VkShaderModule fragmentShader, VkFormat swapchainFormat) {
+    VkPipeline CreateGraphicsPipeline(VkDevice device, VkPipelineLayout pipelineLayout, VkShaderModule vertexShader, VkShaderModule fragmentShader, VkFormat swapchainFormat) {
         VkPipelineShaderStageCreateInfo shaderStages[2] = {};
 
         // Vertex Shader Stage
@@ -67,8 +67,11 @@ namespace vulkGraphicsPipeline {
 
         VkPipelineRenderingCreateInfo renderingCreateInfo{};
         renderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+        renderingCreateInfo.pNext = nullptr;
         renderingCreateInfo.colorAttachmentCount = 1;
         renderingCreateInfo.pColorAttachmentFormats = &swapchainFormat;
+        renderingCreateInfo.stencilAttachmentFormat = VK_FORMAT_UNDEFINED;
+        renderingCreateInfo.depthAttachmentFormat = VK_FORMAT_D32_SFLOAT;
 
         VkDynamicState dynamicStates[] = {
             VK_DYNAMIC_STATE_VIEWPORT,
@@ -80,10 +83,21 @@ namespace vulkGraphicsPipeline {
         dynamicState.dynamicStateCount = 2;
         dynamicState.pDynamicStates = dynamicStates;
 
+        VkPipelineDepthStencilStateCreateInfo depthStencil{};
+        depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+        depthStencil.depthTestEnable = VK_TRUE;           
+        depthStencil.depthWriteEnable = VK_TRUE;           
+        depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;  
+        depthStencil.depthBoundsTestEnable = VK_FALSE;
+        depthStencil.stencilTestEnable = VK_FALSE;
+        depthStencil.flags = 0;
+
         VkGraphicsPipelineCreateInfo pipelineInfo = {};
         pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
         pipelineInfo.stageCount = 2;
         pipelineInfo.pStages = shaderStages;
+        
+        pipelineInfo.pDepthStencilState = &depthStencil;
         pipelineInfo.pVertexInputState = &vertexInputInfo;
         pipelineInfo.pInputAssemblyState = &inputAssembly;
         pipelineInfo.pViewportState = &viewportState;
@@ -102,13 +116,10 @@ namespace vulkGraphicsPipeline {
         VkPipeline pipeline;
         if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS) {
             std::cout << "Failed to create graphics pipeline\n";
-            return;
+            return VK_NULL_HANDLE;
         }
 
-        pipevariables pv;
-        pv.pipeline = pipeline;
-        pv.createinf = pipelineInfo;
-        return pv;
+        return pipeline;
     }
     void DestroyPipeline(VkPipeline pipeline, VkDevice device) {
         vkDestroyPipeline(device, pipeline, nullptr);

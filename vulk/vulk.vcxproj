@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Common\Types.h" />
     <ClInclude Include="src\Render\imguiinit.h" />
     <ClInclude Include="src\Render\ObjectRenderer.h" />
     <ClInclude Include="src\AssetHandler\AssetHandler.h" />
@@ -33,11 +34,15 @@
     <ClInclude Include="src\Vulkan\Backend\vulkSwapchain.h" />
     <ClInclude Include="src\Vulkan\Backend\vulkGraphicsPipeline.h" />
     <ClInclude Include="src\Vulkan\Backend\vulkShaderModule.h" />
-    <ClInclude Include="src\Vulkan\GeoData.h" />
     <ClInclude Include="src\Vulkan\vulkBackend.h" />
     <ClInclude Include="src\Vulkan\Backend\vulkRendering.h" />
     <ClInclude Include="src\Vulkan\Backend\vulkBuffer.h" />
     <ClInclude Include="src\Vulkan\vulkTypes.h" />
+    <ClInclude Include="vendor\imgui\imconfig.h" />
+    <ClInclude Include="vendor\imgui\imgui.h" />
+    <ClInclude Include="vendor\imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="vendor\imgui\imgui_impl_vulkan.h" />
+    <ClInclude Include="vendor\imgui\imgui_internal.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Render\imguiinit.cpp" />
@@ -59,6 +64,13 @@
     <ClCompile Include="src\Vulkan\vulkBackend.cpp" />
     <ClCompile Include="src\Vulkan\Backend\vulkRendering.cpp" />
     <ClCompile Include="src\Vulkan\Backend\vulkBuffer.cpp" />
+    <ClCompile Include="vendor\imgui\imgui.cpp" />
+    <ClCompile Include="vendor\imgui\imgui_demo.cpp" />
+    <ClCompile Include="vendor\imgui\imgui_draw.cpp" />
+    <ClCompile Include="vendor\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="vendor\imgui\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="vendor\imgui\imgui_tables.cpp" />
+    <ClCompile Include="vendor\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\Shaders\compile.bat" />
@@ -147,9 +159,9 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>;IMGUI_DEFINE_MATH_OPERATORS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(ProjectDir)vendor\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(ProjectDir)vendor\;$(ProjectDir)vendor\imgui</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -166,9 +178,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>;IMGUI_DEFINE_MATH_OPERATORS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(ProjectDir)vendor\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(ProjectDir)vendor\;$(ProjectDir)vendor\imgui</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>

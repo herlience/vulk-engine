@@ -1,5 +1,6 @@
 #pragma once
 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -12,7 +13,7 @@ struct Camera {
     float yaw{ -90.0f };  
     float pitch{ 0.0f };  
 
-    float fov{ 45.0f };       
+    float fov{ 70.0f };       
     float nearClip{ 0.1f };   // En yakýn çizim mesafesi
     float farClip{ 100.0f };  // En uzak çizim mesafesi
 
@@ -22,9 +23,9 @@ struct Camera {
 
 namespace CameraSystem
 {
-    glm::vec3 position = glm::vec3(0.0f, 0.0f, 5.0f);
-    glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+    inline glm::vec3 position = glm::vec3(0.0f, 0.0f, 5.0f);
+    inline glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
+    inline glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
     void updateViewMatrix();
     void updateProjectionMatrix(float width, float height);

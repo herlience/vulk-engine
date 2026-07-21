@@ -1,4 +1,8 @@
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+
 #include "Camera.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace CameraSystem
 {
@@ -14,6 +18,6 @@ namespace CameraSystem
         m_projectionMatrix[1][1] *= -1.0f;
     }
     glm::mat4 CameraSystem::getViewProjectionMatrix() {
-        return m_viewMatrix * m_projectionMatrix;
+        return m_projectionMatrix * m_viewMatrix;
     }
 }

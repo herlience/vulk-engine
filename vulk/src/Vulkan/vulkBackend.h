@@ -4,6 +4,10 @@
 #include <VMA/vk_mem_alloc.h>
 #include "vulkTypes.h"
 #include <imgui/imgui.h>
+
+#include "../Render/Renderer.h"
+#include "../AssetHandler/AssetHandler.h"
+
 #include "Backend/vulkInstance.h"
 #include "Backend/vulkDevice.h"
 #include "Backend/vulkSwapchain.h"
@@ -12,7 +16,6 @@
 #include "Backend/vulkShaderModule.h"
 #include "Backend/vulkRendering.h"
 #include "Backend/vulkBuffer.h"
-#include "GeoData.h"
 
 namespace vulkBackend {
 	void InitVulk();

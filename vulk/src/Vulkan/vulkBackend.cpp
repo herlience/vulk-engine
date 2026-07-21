@@ -19,7 +19,6 @@ namespace vulkBackend {
 
 		vulkcomp.MAX_FRAMES_IN_FLIGHT = 2;
 		vulkcomp.currentFrame = 0;
-		vulkcomp.vertices = vertices;
 
 		vulkcomp.instance = vulkInstance::create();
 		vulkcomp.debugmessenger = vulkInstance::createDebugMessenger(vulkcomp.instance);
@@ -40,7 +39,7 @@ namespace vulkBackend {
 		auto fragShaderCode = vulkShaderModule::readFile("res/Shaders/frag.spv");
 		vertshadermodule = vulkShaderModule::createShaderModule(vertShaderCode, vulkcomp.device);
 		fragshadermodule = vulkShaderModule::createShaderModule(fragShaderCode, vulkcomp.device);
-		vulkcomp.pipelinevar = vulkGraphicsPipeline::CreateGraphicsPipeline(vulkcomp.device, vulkcomp.layout, vertshadermodule, fragshadermodule, swapchainvariables.format);
+		vulkcomp.pipeline = vulkGraphicsPipeline::CreateGraphicsPipeline(vulkcomp.device, vulkcomp.layout, vertshadermodule, fragshadermodule, swapchainvariables.format);
 
 		vulkcomp.commandpool = vulkRendering::createCommandPool(vulkcomp.device, indices.graphicsFamily.value());
 
@@ -64,6 +63,14 @@ namespace vulkBackend {
 			std::cout << "we got a problem about allocator" << std::endl;
 		}
 
+		VkExtent3D geciciextent;
+		geciciextent.height = vulkcomp.swapchainvariables.extent.height;
+		geciciextent.width = vulkcomp.swapchainvariables.extent.width;
+		geciciextent.depth = 1;
+
+		vulkcomp.depthimage = vulkBuffer::create_image(geciciextent, VK_FORMAT_D32_SFLOAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, vulkcomp.allocator);
+		vulkcomp.depthimageview = vulkBuffer::createdepthimageview(vulkcomp.depthimage, vulkcomp.device);
+		
 		vulkcomp.commandBuffers.resize(vulkcomp.MAX_FRAMES_IN_FLIGHT);
 		vulkcomp.imageAvailableSemaphores.resize(swapchainvariables.images.size());
 		vulkcomp.renderFinishedSemaphores.resize(swapchainvariables.images.size());
@@ -82,22 +89,27 @@ namespace vulkBackend {
 	
 
 	void DestroyVulk() {
-		vmaDestroyAllocator(vulkcomp.allocator);
+		AssetHandler::cleanup(vulkcomp.allocator);
+		Renderer::clearDrawlist();
 
 		for (size_t i = 0; i < swapchainvariables.images.size(); i++) {
 			vkDestroySemaphore(vulkcomp.device, vulkcomp.renderFinishedSemaphores[i], nullptr);
 			vkDestroySemaphore(vulkcomp.device, vulkcomp.imageAvailableSemaphores[i], nullptr);
 		}
-		
+
 		for (size_t i = 0; i < vulkcomp.MAX_FRAMES_IN_FLIGHT; i++) {
 			vkDestroyFence(vulkcomp.device, vulkcomp.inFlightFences[i], nullptr);
 		}
+
 		vkDestroyCommandPool(vulkcomp.device, vulkcomp.commandpool, nullptr);
+
+		vulkBuffer::destroy_image(vulkcomp.depthimage, vulkcomp.allocator);
+		vulkBuffer::destroy_imageview(vulkcomp.device, vulkcomp.depthimageview);
 
 		vkDestroyBuffer(vulkcomp.device, vulkcomp.vertexbuffer, nullptr);
 		vkFreeMemory(vulkcomp.device, vulkcomp.vertexbuffermemory, nullptr);
 
-		vkDestroyPipeline(vulkcomp.device, vulkcomp.pipelinevar.pipeline, nullptr);
+		vkDestroyPipeline(vulkcomp.device, vulkcomp.pipeline, nullptr);
 		vkDestroyShaderModule(vulkcomp.device, fragshadermodule, nullptr);
 		vkDestroyShaderModule(vulkcomp.device, vertshadermodule, nullptr);
 		vkDestroyPipelineLayout(vulkcomp.device, vulkcomp.layout, nullptr);
@@ -105,8 +117,9 @@ namespace vulkBackend {
 		for (auto imageView : vulkcomp.imageViews) {
 			vkDestroyImageView(vulkcomp.device, imageView, nullptr);
 		}
-
 		vkDestroySwapchainKHR(vulkcomp.device, swapchainvariables.swapchain, nullptr);
+
+		vmaDestroyAllocator(vulkcomp.allocator);
 
 		vkDestroyDevice(vulkcomp.device, nullptr);
 

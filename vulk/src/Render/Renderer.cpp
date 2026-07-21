@@ -1,15 +1,9 @@
 #include "Renderer.h"
+#include <algorithm>
 
 namespace Renderer {
     void DrawFrame(
-        VulkComponents& vulkcomp,
-        VkSwapchainKHR swapchain,
-        const std::vector<VkImage>& images,
-        VkFormat swapchainFormat,
-        VkExtent2D extent,
-        std::span<Vertex> vertices,
-        GPUMeshBuffers meshbuffers,
-        Camera& camera
+        VulkComponents& vulkcomp
     ) {
         vkWaitForFences(vulkcomp.device, 1, &vulkcomp.inFlightFences[vulkcomp.currentFrame], VK_TRUE, UINT64_MAX);
         vkResetFences(vulkcomp.device, 1, &vulkcomp.inFlightFences[vulkcomp.currentFrame]);
@@ -17,7 +11,7 @@ namespace Renderer {
         uint32_t imageIndex;
         vkAcquireNextImageKHR(
             vulkcomp.device,
-            swapchain,
+            vulkcomp.swapchainvariables.swapchain,
             UINT64_MAX,
             vulkcomp.imageAvailableSemaphores[vulkcomp.currentFrame], // 0 veya 1 gidecek
             VK_NULL_HANDLE,
@@ -39,15 +33,32 @@ namespace Renderer {
         imageBarrier.dstAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
         imageBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         imageBarrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        imageBarrier.image = images[imageIndex];
+        imageBarrier.image = vulkcomp.swapchainvariables.images[imageIndex];
         imageBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         imageBarrier.subresourceRange.levelCount = 1;
         imageBarrier.subresourceRange.layerCount = 1;
 
+        VkImageMemoryBarrier2 depthBarrier{};
+        depthBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+        depthBarrier.srcStageMask = VK_PIPELINE_STAGE_2_NONE;
+        depthBarrier.srcAccessMask = VK_ACCESS_2_NONE;
+        depthBarrier.dstStageMask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+        depthBarrier.dstAccessMask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        depthBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthBarrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+        depthBarrier.image = vulkcomp.depthimage.image;
+        depthBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+        depthBarrier.subresourceRange.baseMipLevel = 0;
+        depthBarrier.subresourceRange.levelCount = 1;
+        depthBarrier.subresourceRange.baseArrayLayer = 0;
+        depthBarrier.subresourceRange.layerCount = 1;
+
+        VkImageMemoryBarrier2 barriers[2] = { imageBarrier, depthBarrier };
+
         VkDependencyInfo dependencyInfo{};
         dependencyInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
-        dependencyInfo.imageMemoryBarrierCount = 1;
-        dependencyInfo.pImageMemoryBarriers = &imageBarrier;
+        dependencyInfo.imageMemoryBarrierCount = 2;
+        dependencyInfo.pImageMemoryBarriers = barriers;
 
         vkCmdPipelineBarrier2(vulkcomp.commandBuffers[vulkcomp.currentFrame], &dependencyInfo);
 
@@ -59,16 +70,25 @@ namespace Renderer {
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         colorAttachment.clearValue.color = { {0.0f, 0.0f, 0.0f, 1.0f} }; // Siyah ekran
 
+        VkRenderingAttachmentInfo depthAttachmentInfo{};
+        depthAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+        depthAttachmentInfo.imageView = vulkcomp.depthimageview;
+        depthAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+        depthAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        depthAttachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        depthAttachmentInfo.clearValue.depthStencil = { 1.0f, 0 };
+
         VkRenderingInfo renderingInfo{};
         renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
-        renderingInfo.renderArea.extent = vulkcomp.swapchainvariables.extent;
+        renderingInfo.renderArea = { {0, 0}, vulkcomp.swapchainvariables.extent };
         renderingInfo.layerCount = 1;
         renderingInfo.colorAttachmentCount = 1;
         renderingInfo.pColorAttachments = &colorAttachment;
+        renderingInfo.pDepthAttachment = &depthAttachmentInfo;
 
         vkCmdBeginRendering(vulkcomp.commandBuffers[vulkcomp.currentFrame], &renderingInfo);
 
-        vkCmdBindPipeline(vulkcomp.commandBuffers[vulkcomp.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vulkcomp.pipelinevar.pipeline);
+        vkCmdBindPipeline(vulkcomp.commandBuffers[vulkcomp.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vulkcomp.pipeline);
 
         VkViewport viewport{};
         viewport.x = 0.0f;
@@ -87,6 +107,9 @@ namespace Renderer {
 
         glm::mat4 viewproj = CameraSystem::getViewProjectionMatrix();
 
+        AssetHandler::syncpendingobjects();
+
+
         for (const auto& obj : m_drawlist) {
             GPUDrawPushConstants pushData{};
             pushData.worldMatrix = viewproj * obj.modelMatrix;
@@ -100,16 +123,19 @@ namespace Renderer {
                 0,
                 VK_INDEX_TYPE_UINT32
             );
-
+            
             vkCmdDrawIndexed(
                 vulkcomp.commandBuffers[vulkcomp.currentFrame],
                 obj.indexCount,
                 1,
-                obj.firstIndex, 
+                0, 
                 0,
                 0
             );
-        } // 3 vertex = 1 üçgen
+        }
+
+        AssetHandler::RenderImGui(vulkcomp, vulkcomp.commandBuffers[vulkcomp.currentFrame]);
+
         vkCmdEndRendering(vulkcomp.commandBuffers[vulkcomp.currentFrame]);
 
         VkImageMemoryBarrier2 imageBarrier2{};
@@ -120,7 +146,7 @@ namespace Renderer {
         imageBarrier2.dstAccessMask = 0;
         imageBarrier2.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         imageBarrier2.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-        imageBarrier2.image = images[imageIndex];
+        imageBarrier2.image = vulkcomp.swapchainvariables.images[imageIndex];
         imageBarrier2.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         imageBarrier2.subresourceRange.levelCount = 1;
         imageBarrier2.subresourceRange.layerCount = 1;
@@ -140,7 +166,7 @@ namespace Renderer {
         VkSemaphoreSubmitInfo waitSemaphoreInfo{};
         waitSemaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
         waitSemaphoreInfo.semaphore = vulkcomp.imageAvailableSemaphores[vulkcomp.currentFrame];
-        waitSemaphoreInfo.stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+        waitSemaphoreInfo.stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT;
 
         VkSemaphoreSubmitInfo signalSemaphoreInfo{};
         signalSemaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
@@ -164,11 +190,19 @@ namespace Renderer {
         presentInfo.pWaitSemaphores = &vulkcomp.renderFinishedSemaphores[imageIndex];
 
         presentInfo.swapchainCount = 1;
-        presentInfo.pSwapchains = &swapchain;
+        presentInfo.pSwapchains = &vulkcomp.swapchainvariables.swapchain;
         presentInfo.pImageIndices = &imageIndex;
 
         vkQueuePresentKHR(vulkcomp.presentQueue, &presentInfo);
 
         vulkcomp.currentFrame = (vulkcomp.currentFrame + 1) % vulkcomp.MAX_FRAMES_IN_FLIGHT;
+    }
+
+    void removeRenderObjectsByIndexBuffer(VkBuffer buffer) {
+        m_drawlist.erase(
+            std::remove_if(m_drawlist.begin(), m_drawlist.end(),
+                [buffer](const RenderObject& o) { return o.indexBuffer == buffer; }),
+            m_drawlist.end()
+        );
     }
 }

@@ -1,5 +1,12 @@
 #define GLFW_INCLUDE_VULKAN
 
+#ifdef _WIN32
+extern "C" {
+    __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
+    __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+}
+#endif
+
 #include "vulkDevice.h"
 #include <GLFW/include/glfw3.h>
 #include <iostream>
@@ -20,18 +27,38 @@ namespace vulkDevice {
         std::vector<VkPhysicalDevice> devices(deviceCount);
         vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
+        VkPhysicalDevice selectedDevice = VK_NULL_HANDLE;
+
         for (const auto& device : devices) {
             if (isDeviceSuitable(device, surface)) {
-                vulkPhysicalDevice = device;
-                break;
+                VkPhysicalDeviceProperties props;
+                vkGetPhysicalDeviceProperties(device, &props);
+
+                if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+                    selectedDevice = device;
+                    std::cout << "[GPU Secildi]: " << props.deviceName << " (Discrete GPU)" << std::endl;
+                    break;
+                }
             }
         }
 
-        if (vulkPhysicalDevice == VK_NULL_HANDLE) {
-            throw std::runtime_error("We have a problem for GPU suitability!");
+        if (selectedDevice == VK_NULL_HANDLE) {
+            for (const auto& device : devices) {
+                if (isDeviceSuitable(device, surface)) {
+                    selectedDevice = device;
+                    VkPhysicalDeviceProperties props;
+                    vkGetPhysicalDeviceProperties(selectedDevice, &props);
+                    std::cout << "[GPU Secildi]: " << props.deviceName << " (Integrated/Fallback GPU)" << std::endl;
+                    break;
+                }
+            }
         }
 
-        return vulkPhysicalDevice;
+        if (selectedDevice == VK_NULL_HANDLE) {
+            throw std::runtime_error("Gerekli ozellikleri karsilayan bir GPU bulunamadi!");
+        }
+
+        return selectedDevice;
     }
 
     VkDevice createLogicalDevice(VkSurfaceKHR surface, VkPhysicalDevice vulkPhysicalDevice, QueueFamilyIndices indices, PFN_vkCmdSetVertexInputEXT& fnCmdSetVertexInputEXT) {

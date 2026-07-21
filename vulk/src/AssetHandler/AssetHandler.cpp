@@ -1,4 +1,6 @@
 #include "AssetHandler.h"
+#include "../Render/Renderer.h"
+#include "../Vulkan/Backend/vulkBuffer.h"
 
 namespace AssetHandler {
 
@@ -6,7 +8,7 @@ namespace AssetHandler {
     static std::queue<RenderObject> s_pendingRenderObjects;
     static std::mutex s_queueMutex;
 
-    void RenderImGui(VulkComponents vulkcomp) {
+    void RenderImGui(VulkComponents vulkcomp, VkCommandBuffer cmd) {
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -15,13 +17,14 @@ namespace AssetHandler {
         assetbrowser(vulkcomp);
 
         ImGui::Render();
+
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
     }
 
     void debugpanel() {
         ImGui::Begin("debug");
-        ImGui::Text("test");
 
-        if (ImGui::Button("show assets")) {
+        if (ImGui::Button("show asset")) {
             showAssetBrowser = !showAssetBrowser;
         }
 
@@ -65,13 +68,21 @@ namespace AssetHandler {
         std::vector<tinyobj::material_t> materials;
         std::string err;
 
+        std::filesystem::path objPath(path);
+        std::string materialFolder = objPath.parent_path().string() + "/";
+
+        
+        if (objPath.parent_path().empty()) {
+            materialFolder = "./";
+        }
+
         bool ret = tinyobj::LoadObj(
             &attrib,
             &shapes,
             &materials,
             &err,
             path.c_str(),
-            nullptr
+            materialFolder.c_str()
         );
 
         if (!err.empty()) {
@@ -165,17 +176,29 @@ namespace AssetHandler {
             graphicsQueue
         );
 
+     
+        Mesh newMesh;
+        newMesh.buffers = gpuBuffers;
+        newMesh.indexcount = static_cast<uint32_t>(outIndices.size());
+        newMesh.vertexcount = static_cast<uint32_t>(outVertices.size());
+
+        s_parsedMeshes.push_back(newMesh);
+        std::cout << " Mesh cached "
+                << " | Vertices: " << newMesh.vertexcount 
+                << " | Indices: " << newMesh.indexcount << std::endl;
+
         RenderObject newObj;
         newObj.indexBuffer = gpuBuffers.indexBuffer.buffer;
         newObj.vertexBufferAddress = gpuBuffers.vertexBufferAddress;
         newObj.indexCount = static_cast<uint32_t>(outIndices.size());
         newObj.firstIndex = 0;
-        newObj.modelMatrix = glm::mat4(1.0f);
+        newObj.modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 
         {
             std::lock_guard<std::mutex> lock(s_queueMutex);
             s_pendingRenderObjects.push(newObj);
         }
+
     }
 
     void syncpendingobjects() {
@@ -193,7 +216,7 @@ namespace AssetHandler {
         std::vector<std::string> objFiles;
 
         if (!std::filesystem::exists(folderPath) || !std::filesystem::is_directory(folderPath)) {
-            std::cerr << "res klasörü bulunamadý!" << std::endl;
+            std::cerr << "res klasoru bulunamadi!" << std::endl;
             return objFiles;
         }
 
@@ -203,5 +226,42 @@ namespace AssetHandler {
             }
         }
         return objFiles;
+    }
+
+    void cleanup(VmaAllocator allocator) {
+        for (size_t i = 0; i < s_parsedMeshes.size(); ++i) {
+            auto& mesh = s_parsedMeshes[i];
+
+            if (mesh.buffers.indexBuffer.buffer != VK_NULL_HANDLE) {
+                vulkBuffer::destroy_buffer(mesh.buffers.indexBuffer, allocator);
+            }
+
+            if (mesh.buffers.vertexBuffer.buffer != VK_NULL_HANDLE) {
+                vulkBuffer::destroy_buffer(mesh.buffers.vertexBuffer, allocator);
+            }
+        }
+
+        s_parsedMeshes.clear();
+        Renderer::clearDrawlist();
+    }
+
+    void unloadMesh(size_t index, VmaAllocator allocator) {
+        if (index >= s_parsedMeshes.size()) {
+            return;
+        }
+
+        Mesh mesh = s_parsedMeshes[index];
+
+        Renderer::removeRenderObjectsByIndexBuffer(mesh.buffers.indexBuffer.buffer);
+
+        if (mesh.buffers.indexBuffer.buffer != VK_NULL_HANDLE) {
+            vulkBuffer::destroy_buffer(mesh.buffers.indexBuffer, allocator);
+        }
+
+        if (mesh.buffers.vertexBuffer.buffer != VK_NULL_HANDLE) {
+            vulkBuffer::destroy_buffer(mesh.buffers.vertexBuffer, allocator);
+        }
+
+        s_parsedMeshes.erase(s_parsedMeshes.begin() + index);
     }
 }

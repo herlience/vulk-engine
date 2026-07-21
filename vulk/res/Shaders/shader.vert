@@ -1,5 +1,6 @@
 #version 450
 #extension GL_EXT_buffer_reference : require
+#extension GL_EXT_scalar_block_layout : require
 
 layout (location = 0) out vec3 outColor;
 layout (location = 1) out vec2 outUV;
@@ -13,7 +14,7 @@ struct Vertex {
 	vec4 color;
 }; 
 
-layout(buffer_reference, std430) readonly buffer VertexBuffer{ 
+layout(buffer_reference, scalar) readonly buffer VertexBuffer{ 
 	Vertex vertices[];
 };
 

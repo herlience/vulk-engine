@@ -13,20 +13,25 @@
 #include <mutex>
 
 #include <TinyOBJ/tiny_obj_loader.h>
+#include <GLFW/include/glfw3.h>
 
 #include "../Render/RendererTypes.h"
 #include "../Render/Renderer.h"
 #include "../Render/ObjectRenderer.h"
 #include "../Vulkan/vulkTypes.h"
+#include "../Vulkan/vulkBackend.h"
 
 namespace AssetHandler
 {
-	std::vector<std::string> cacheModels = get_obj_files();
+	std::vector<std::string> get_obj_files(const std::string& folderpath = "res");
+
+	inline std::vector<std::string> cacheModels = get_obj_files();
 	static int selectedModelIndex = -1;
 	static bool showAssetBrowser = false;
 
+	void syncpendingobjects();
 
-	void RenderImGui(VulkComponents vulkcomp);
+	void RenderImGui(VulkComponents vulkcomp, VkCommandBuffer cmd);
 	
 	void debugpanel();
 	void assetbrowser(VulkComponents vulkcomp);
@@ -38,8 +43,7 @@ namespace AssetHandler
 		VkCommandPool commandPool,
 		VkQueue graphicsQueue
 	);
-
-
-	std::vector<std::string> get_obj_files(const std::string& folderpath = "res");
+	void cleanup(VmaAllocator allocator);
+	void unloadMesh(size_t index, VmaAllocator allocator); 
 };
 

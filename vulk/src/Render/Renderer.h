@@ -5,6 +5,7 @@
 #include "../Vulkan/vulkTypes.h"
 #include "RendererTypes.h"
 #include "../Camera/Camera.h"
+#include "../AssetHandler/AssetHandler.h"
 #include <span>
 #include <vector>
 
@@ -12,24 +13,18 @@ namespace Renderer
 {
     inline std::vector<RenderObject> m_drawlist;
 
-    void addRenderObject(const RenderObject& obj) {
+    
+    inline void addRenderObject(const RenderObject& obj) {
         m_drawlist.push_back(obj);
     }
 
-    void clearDrawlist() {
+    inline void clearDrawlist() {
         m_drawlist.clear();
     }
 
     void DrawFrame(
-        VulkComponents& vulkcomp,
-        VkSwapchainKHR swapchain,
-        const std::vector<VkImage>& images,
-        VkFormat swapchainFormat,
-        VkExtent2D extent,
-        std::span<Vertex> vertices,
-        GPUMeshBuffers meshbuffers,
-        Camera& camera
+        VulkComponents& vulkcomp
     );
-
+    void removeRenderObjectsByIndexBuffer(VkBuffer buffer);
 }
 

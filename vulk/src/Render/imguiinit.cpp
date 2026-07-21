@@ -1,4 +1,4 @@
-#define IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING
+
 
 #include "imguiinit.h"
 
@@ -37,23 +37,12 @@ namespace Imgui {
 		renderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
 		renderingCreateInfo.colorAttachmentCount = 1;
 		renderingCreateInfo.pColorAttachmentFormats = &vulkcomp.swapchainvariables.format;
+		renderingCreateInfo.depthAttachmentFormat = VK_FORMAT_D32_SFLOAT;
 
 		ImGui_ImplVulkan_PipelineInfo pipelineinfomain = {};
 		pipelineinfomain.PipelineRenderingCreateInfo = renderingCreateInfo;
 		pipelineinfomain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-
-		VkDynamicState dynamicStates[] = {
-			VK_DYNAMIC_STATE_VIEWPORT,
-			VK_DYNAMIC_STATE_SCISSOR
-		};
-
-		ImVector<VkDynamicState> imstate;
-
-		for (auto state : dynamicStates) {
-			imstate.push_back(state);
-		}
-
-		pipelineinfomain.ExtraDynamicStates = imstate;
+		pipelineinfomain.ExtraDynamicStates.clear();
 		pipelineinfomain.RenderPass = VK_NULL_HANDLE;
 		
 		init_info.PipelineInfoMain = pipelineinfomain;

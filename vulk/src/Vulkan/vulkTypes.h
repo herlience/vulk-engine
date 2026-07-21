@@ -12,7 +12,6 @@
 #define FMT_HEADER_ONLY
 #include <fmt/core.h>
 
-#include "../Render/RendererTypes.h"
 #include "Backend/vulkGraphicsPipeline.h"
 
 #include <vulkan/vulkan.h>
@@ -54,6 +53,14 @@ struct AllocatedBuffer {
     VmaAllocationInfo info;
 };
 
+struct AllocatedImage {
+    VkImage image;
+    VmaAllocation allocation;
+    VmaAllocationInfo info;
+    VkFormat imageFormat;
+    VkExtent3D imageExtent;
+};
+
 struct VulkComponents {
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugmessenger;
@@ -62,7 +69,7 @@ struct VulkComponents {
     VkDevice device;
     SwapchainVariables swapchainvariables;
     std::vector<VkImageView> imageViews;
-    pipevariables pipelinevar;
+    VkPipeline pipeline;
     VkPipelineLayout layout;
     std::vector<VkCommandBuffer> commandBuffers;
     VkQueue graphicsQueue;
@@ -75,8 +82,9 @@ struct VulkComponents {
     VkBuffer vertexbuffer;
     VkCommandPool commandpool;
     VkDeviceMemory vertexbuffermemory;
-    std::vector<Vertex> vertices;
     PFN_vkCmdSetVertexInputEXT fnCmdSetVertexInputEXT;
     VmaAllocator allocator;
+    AllocatedImage depthimage;
+    VkImageView depthimageview;
 };
 
