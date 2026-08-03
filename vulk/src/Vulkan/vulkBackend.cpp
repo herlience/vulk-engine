@@ -65,8 +65,10 @@ namespace vulkBackend {
 
 		vulkcomp.threedextenttanimlama();
 
+		vulkcomp.defaulttexturesampler = vulkBuffer::createtexturesampler(vulkcomp.device);
+
 		vulkcomp.depthimage = vulkBuffer::create_image(vulkcomp.threedextent, VK_FORMAT_D32_SFLOAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, vulkcomp.allocator);
-		vulkcomp.depthimageview = vulkBuffer::createdepthimageview(vulkcomp.depthimage, vulkcomp.device);
+		vulkcomp.depthimageview = vulkBuffer::createimageview(vulkcomp.depthimage, vulkcomp.device, VK_IMAGE_ASPECT_DEPTH_BIT);
 		
 		vulkcomp.commandBuffers.resize(vulkcomp.MAX_FRAMES_IN_FLIGHT);
 		vulkcomp.imageAvailableSemaphores.resize(swapchainvariables.images.size());

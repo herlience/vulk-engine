@@ -40,6 +40,9 @@ namespace texturehandler {
 		vulkBuffer::end_single_time_commands(vulkcomp, cmd);
 		vulkBuffer::destroy_buffer(stagingbuffer, vulkcomp.allocator);
 
+		tex.imageView = vulkBuffer::createimageview(tex.image, vulkcomp.device, VK_IMAGE_ASPECT_COLOR_BIT);
+		tex.sampler = vulkcomp.defaulttexturesampler;
+
 		return tex;
 	}
 }

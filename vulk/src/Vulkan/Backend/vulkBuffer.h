@@ -13,7 +13,7 @@
 namespace vulkBuffer {
 	AllocatedBuffer create_buffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VmaAllocator _allocator);
 	AllocatedImage create_image(VkExtent3D size, VkFormat format, VkImageUsageFlags usage, VmaAllocator allocator);
-	VkImageView createdepthimageview(AllocatedImage depthimage, VkDevice device);
+	VkImageView createimageview(AllocatedImage image, VkDevice device, VkImageAspectFlags aspectmask);
 	VkSampler createtexturesampler(VkDevice device);
 
 	VkCommandBuffer begin_single_time_commands(VulkComponents vulkcomp);

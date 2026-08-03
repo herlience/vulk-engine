@@ -44,24 +44,24 @@ namespace vulkBuffer {
         return newImage;
     }
 
-    VkImageView createdepthimageview(AllocatedImage depthimage, VkDevice device) {
+    VkImageView createimageview(AllocatedImage image, VkDevice device, VkImageAspectFlags aspectmask) {
         VkImageViewCreateInfo viewInfo = { .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
-        viewInfo.image = depthimage.image; 
+        viewInfo.image = image.image; 
         viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        viewInfo.format = depthimage.imageFormat; 
+        viewInfo.format = image.imageFormat; 
 
         
-        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+        viewInfo.subresourceRange.aspectMask = aspectmask;
         viewInfo.subresourceRange.baseMipLevel = 0;
         viewInfo.subresourceRange.levelCount = 1;
         viewInfo.subresourceRange.baseArrayLayer = 0;
         viewInfo.subresourceRange.layerCount = 1;
 
-        VkImageView _depthImageView;
+        VkImageView imageView;
 
-        VK_CHECK(vkCreateImageView(device, &viewInfo, nullptr, &_depthImageView));
+        VK_CHECK(vkCreateImageView(device, &viewInfo, nullptr, &imageView));
 
-        return _depthImageView;
+        return imageView;
     }
 
     VkSampler createtexturesampler(VkDevice device) {
