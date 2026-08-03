@@ -86,5 +86,12 @@ struct VulkComponents {
     VmaAllocator allocator;
     AllocatedImage depthimage;
     VkImageView depthimageview;
+    VkExtent3D threedextent;
+
+    void threedextenttanimlama() {
+        threedextent.height = swapchainvariables.extent.height;
+        threedextent.width = swapchainvariables.extent.width;
+        threedextent.depth = 1;
+    }
 };
 

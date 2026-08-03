@@ -63,12 +63,9 @@ namespace vulkBackend {
 			std::cout << "we got a problem about allocator" << std::endl;
 		}
 
-		VkExtent3D geciciextent;
-		geciciextent.height = vulkcomp.swapchainvariables.extent.height;
-		geciciextent.width = vulkcomp.swapchainvariables.extent.width;
-		geciciextent.depth = 1;
+		vulkcomp.threedextenttanimlama();
 
-		vulkcomp.depthimage = vulkBuffer::create_image(geciciextent, VK_FORMAT_D32_SFLOAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, vulkcomp.allocator);
+		vulkcomp.depthimage = vulkBuffer::create_image(vulkcomp.threedextent, VK_FORMAT_D32_SFLOAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, vulkcomp.allocator);
 		vulkcomp.depthimageview = vulkBuffer::createdepthimageview(vulkcomp.depthimage, vulkcomp.device);
 		
 		vulkcomp.commandBuffers.resize(vulkcomp.MAX_FRAMES_IN_FLIGHT);

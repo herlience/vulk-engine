@@ -38,6 +38,7 @@
     <ClInclude Include="src\Vulkan\Backend\vulkRendering.h" />
     <ClInclude Include="src\Vulkan\Backend\vulkBuffer.h" />
     <ClInclude Include="src\Vulkan\vulkTypes.h" />
+    <ClInclude Include="src\AssetHandler\texturehandler.h" />
     <ClInclude Include="vendor\imgui\imconfig.h" />
     <ClInclude Include="vendor\imgui\imgui.h" />
     <ClInclude Include="vendor\imgui\imgui_impl_glfw.h" />
@@ -64,6 +65,7 @@
     <ClCompile Include="src\Vulkan\vulkBackend.cpp" />
     <ClCompile Include="src\Vulkan\Backend\vulkRendering.cpp" />
     <ClCompile Include="src\Vulkan\Backend\vulkBuffer.cpp" />
+    <ClCompile Include="src\AssetHandler\texturehandler.cpp" />
     <ClCompile Include="vendor\imgui\imgui.cpp" />
     <ClCompile Include="vendor\imgui\imgui_demo.cpp" />
     <ClCompile Include="vendor\imgui\imgui_draw.cpp" />
