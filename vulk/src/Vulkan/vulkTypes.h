@@ -62,31 +62,32 @@ struct AllocatedImage {
 };
 
 struct VulkComponents {
-    VkInstance instance;
-    VkDebugUtilsMessengerEXT debugmessenger;
-    VkSurfaceKHR surface;
-    VkPhysicalDevice physicaldevice;
-    VkDevice device;
+    VkInstance instance = VK_NULL_HANDLE;
+    VkDebugUtilsMessengerEXT debugmessenger = VK_NULL_HANDLE;
+    VkSurfaceKHR surface = VK_NULL_HANDLE;
+    VkPhysicalDevice physicaldevice = VK_NULL_HANDLE;
+    VkDevice device = VK_NULL_HANDLE;
     SwapchainVariables swapchainvariables;
     std::vector<VkImageView> imageViews;
-    VkPipeline pipeline;
-    VkPipelineLayout layout;
+    VkPipeline pipeline = VK_NULL_HANDLE;
+    VkPipelineLayout layout = VK_NULL_HANDLE;
     std::vector<VkCommandBuffer> commandBuffers;
-    VkQueue graphicsQueue;
-    VkQueue presentQueue;
+    VkQueue graphicsQueue = VK_NULL_HANDLE;
+    VkQueue presentQueue = VK_NULL_HANDLE;
     size_t currentFrame;
     int MAX_FRAMES_IN_FLIGHT;
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
     std::vector<VkFence> inFlightFences;
-    VkBuffer vertexbuffer;
-    VkCommandPool commandpool;
-    VkDeviceMemory vertexbuffermemory;
-    PFN_vkCmdSetVertexInputEXT fnCmdSetVertexInputEXT;
-    VmaAllocator allocator;
+    VkBuffer vertexbuffer = VK_NULL_HANDLE;
+    VkCommandPool commandpool = VK_NULL_HANDLE;
+    VkDeviceMemory vertexbuffermemory = VK_NULL_HANDLE;
+    PFN_vkCmdSetVertexInputEXT fnCmdSetVertexInputEXT = VK_NULL_HANDLE;
+    VmaAllocator allocator = VMA_NULL;
     AllocatedImage depthimage;
-    VkImageView depthimageview;
+    VkImageView depthimageview = VK_NULL_HANDLE;
     VkExtent3D threedextent;
+    VkSampler defaulttexturesampler = VK_NULL_HANDLE;
 
     void threedextenttanimlama() {
         threedextent.height = swapchainvariables.extent.height;
