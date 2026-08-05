@@ -216,4 +216,8 @@ namespace vulkBuffer {
     void destroy_imageview(VkDevice device, VkImageView imageview) {
         vkDestroyImageView(device, imageview, nullptr);
     }
+
+    void destory_sampler(VkDevice device, VkSampler sampler) {
+        vkDestroySampler(device, sampler, nullptr);
+    }
 }

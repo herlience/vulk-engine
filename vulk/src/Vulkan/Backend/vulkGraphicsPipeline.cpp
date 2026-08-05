@@ -125,7 +125,7 @@ namespace vulkGraphicsPipeline {
         vkDestroyPipeline(device, pipeline, nullptr);
     }
 
-    VkPipelineLayout CreatePipelineLayout(VkDevice device) {
+    VkPipelineLayout CreatePipelineLayout(VkDevice device, VkDescriptorSetLayout descriptorlayout) {
         VkPushConstantRange push_constant;
         push_constant.offset = 0;
         push_constant.size = sizeof(GPUDrawPushConstants);
@@ -133,8 +133,8 @@ namespace vulkGraphicsPipeline {
 
         VkPipelineLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        layoutInfo.setLayoutCount = 0;
-        layoutInfo.pSetLayouts = nullptr;
+        layoutInfo.setLayoutCount = 1;
+        layoutInfo.pSetLayouts = &descriptorlayout;
         layoutInfo.pushConstantRangeCount = 1;
         layoutInfo.pPushConstantRanges = &push_constant;
 

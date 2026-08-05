@@ -44,6 +44,7 @@
     <ClInclude Include="vendor\imgui\imgui_impl_glfw.h" />
     <ClInclude Include="vendor\imgui\imgui_impl_vulkan.h" />
     <ClInclude Include="vendor\imgui\imgui_internal.h" />
+    <ClInclude Include="src\Vulkan\Backend\vulkDescriptors.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Render\imguiinit.cpp" />
@@ -73,6 +74,7 @@
     <ClCompile Include="vendor\imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="vendor\imgui\imgui_tables.cpp" />
     <ClCompile Include="vendor\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\Vulkan\Backend\vulkDescriptors.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\Shaders\compile.bat" />

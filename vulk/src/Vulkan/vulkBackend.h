@@ -16,6 +16,7 @@
 #include "Backend/vulkShaderModule.h"
 #include "Backend/vulkRendering.h"
 #include "Backend/vulkBuffer.h"
+#include "Backend/vulkDescriptors.h"
 
 namespace vulkBackend {
 	void InitVulk();

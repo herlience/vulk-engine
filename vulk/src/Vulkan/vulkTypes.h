@@ -71,6 +71,8 @@ struct VulkComponents {
     std::vector<VkImageView> imageViews;
     VkPipeline pipeline = VK_NULL_HANDLE;
     VkPipelineLayout layout = VK_NULL_HANDLE;
+    VkDescriptorSetLayout descriptorsetlayout;
+    VkDescriptorPool descriptorpool;
     std::vector<VkCommandBuffer> commandBuffers;
     VkQueue graphicsQueue = VK_NULL_HANDLE;
     VkQueue presentQueue = VK_NULL_HANDLE;
@@ -83,7 +85,7 @@ struct VulkComponents {
     VkCommandPool commandpool = VK_NULL_HANDLE;
     VkDeviceMemory vertexbuffermemory = VK_NULL_HANDLE;
     PFN_vkCmdSetVertexInputEXT fnCmdSetVertexInputEXT = VK_NULL_HANDLE;
-    VmaAllocator allocator = VMA_NULL;
+    VmaAllocator allocator;
     AllocatedImage depthimage;
     VkImageView depthimageview = VK_NULL_HANDLE;
     VkExtent3D threedextent;

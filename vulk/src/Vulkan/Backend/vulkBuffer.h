@@ -24,5 +24,6 @@ namespace vulkBuffer {
 	void destroy_buffer(const AllocatedBuffer& buffer, VmaAllocator _allocator);
 	void destroy_image(const AllocatedImage& image, VmaAllocator allocator);
 	void destroy_imageview(VkDevice device, VkImageView imageview);
+	void destory_sampler(VkDevice device, VkSampler sampler);
 }
 

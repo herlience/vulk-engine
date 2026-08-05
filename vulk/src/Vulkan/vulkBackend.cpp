@@ -34,7 +34,10 @@ namespace vulkBackend {
 		vulkcomp.swapchainvariables = swapchainvariables;
 		vulkcomp.imageViews = vulkSwapchain::createImageViews(vulkcomp.device, swapchainvariables.images, swapchainvariables.format);
 
-		vulkcomp.layout = vulkGraphicsPipeline::CreatePipelineLayout(vulkcomp.device);
+		vulkcomp.descriptorsetlayout = vulkDescriptors::create_descriptor_set_layout(vulkcomp.device, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+		vulkcomp.descriptorpool = vulkDescriptors::create_descriptor_pool(vulkcomp.device, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+
+		vulkcomp.layout = vulkGraphicsPipeline::CreatePipelineLayout(vulkcomp.device, vulkcomp.descriptorsetlayout);
 		auto vertShaderCode = vulkShaderModule::readFile("res/Shaders/vert.spv");
 		auto fragShaderCode = vulkShaderModule::readFile("res/Shaders/frag.spv");
 		vertshadermodule = vulkShaderModule::createShaderModule(vertShaderCode, vulkcomp.device);
@@ -104,6 +107,10 @@ namespace vulkBackend {
 
 		vulkBuffer::destroy_image(vulkcomp.depthimage, vulkcomp.allocator);
 		vulkBuffer::destroy_imageview(vulkcomp.device, vulkcomp.depthimageview);
+
+		vulkBuffer::destory_sampler(vulkcomp.device, vulkcomp.defaulttexturesampler);
+
+		vulkDescriptors::destroy_all_descriptor_components(vulkcomp.device, vulkcomp.descriptorpool, vulkcomp.descriptorsetlayout);
 
 		vkDestroyBuffer(vulkcomp.device, vulkcomp.vertexbuffer, nullptr);
 		vkFreeMemory(vulkcomp.device, vulkcomp.vertexbuffermemory, nullptr);
