@@ -1,7 +1,7 @@
 #include "AssetHandler.h"
 #include "../Render/Renderer.h"
 #include "../Vulkan/Backend/vulkBuffer.h"
-#include <imgui_internal.h> // Docking helper'larý için gereklidir
+#include <imgui_internal.h> 
 
 namespace AssetHandler {
 
@@ -9,7 +9,7 @@ namespace AssetHandler {
     static std::queue<PendingAsset> s_pendingRenderObjects;
     static std::mutex s_queueMutex;
 
-    // View Panel (Eski debug paneli) kontrol deðiþkenleri
+    
     static bool showViewPanel = true;
 
     void RenderImGui(VulkComponents vulkcomp, VkCommandBuffer cmd) {
@@ -21,10 +21,6 @@ namespace AssetHandler {
         ImGui::NewFrame();
         ImGuizmo::BeginFrame();
 
-        // -------------------------------------------------------------
-        // 1. DOCKSPACE KURULUMU (Ana Editör Çerçevesi)
-        // -------------------------------------------------------------
-
         ImGuiViewport* viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(viewport->WorkPos);
         ImGui::SetNextWindowSize(viewport->WorkSize);
@@ -33,7 +29,7 @@ namespace AssetHandler {
         ImGuiWindowFlags host_window_flags = 0;
         host_window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
         host_window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-        host_window_flags |= ImGuiWindowFlags_NoBackground; // Oyun görüntüsünün arkada görünmesi için
+        host_window_flags |= ImGuiWindowFlags_NoBackground; 
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -45,7 +41,7 @@ namespace AssetHandler {
         ImGuiID dockspace_id = ImGui::GetID("MyEngineDockSpace");
         ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
 
-        // Varsayýlan Düzeni Otomatik Oluþtur (Ýlk Açýlýþta 4 Bölgeye Otomatik Yerleþtirir)
+        
         static bool firstTime = true;
         if (firstTime) {
             firstTime = false;
@@ -59,7 +55,6 @@ namespace AssetHandler {
             ImGuiID dock_right_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.25f, nullptr, &dock_main_id);
             ImGuiID dock_down_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.25f, nullptr, &dock_main_id);
 
-            // Pencereleri bölgelere baðlama
             ImGui::DockBuilderDockWindow("Hierarchy", dock_left_id);
             ImGui::DockBuilderDockWindow("Inspector", dock_right_id);
             ImGui::DockBuilderDockWindow("Asset Browser", dock_down_id);
@@ -68,10 +63,8 @@ namespace AssetHandler {
             ImGui::DockBuilderFinish(dockspace_id);
         }
 
-        ImGui::End(); // MainDockSpaceWindow bitiþi
-        // -------------------------------------------------------------
-
-        // Mouse Picking
+        ImGui::End(); 
+        
         handlemousepicking(
             CameraSystem::getviewmatrix(),
             CameraSystem::getprojectionmatrix(),
@@ -79,13 +72,12 @@ namespace AssetHandler {
             io.DisplaySize.y
         );
 
-        // Editör Pencereleri
-        debugpanel(); // Artýk "View" adýyla çalýþýyor
+        
+        debugpanel(); 
         assetbrowser(vulkcomp);
         hierarchy(vulkcomp);
         inspector();
 
-        // Gizmo Mantýðý
         if (selectedModelIndex >= 0 && selectedModelIndex < static_cast<int>(Renderer::m_gameobjectlist.size()))
         {
             GameObject& selectedObje = Renderer::m_gameobjectlist[selectedModelIndex];
@@ -112,13 +104,12 @@ namespace AssetHandler {
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
     }
 
-    // Eski debugpanel() -> Yeni "View" Paneli
     void debugpanel() {
         if (!showViewPanel) return;
 
         ImGui::Begin("View", &showViewPanel);
 
-        ImGui::Text("Pencereleri A/Kapat");
+        ImGui::Text("Pencereleri Ac/Kapat");
         ImGui::Separator();
 
         if (ImGui::Checkbox("Hierarchy", &showHierarchy)) {}
