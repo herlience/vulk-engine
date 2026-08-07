@@ -113,9 +113,12 @@ namespace Renderer {
 
         vkCmdBindDescriptorSets(vulkcomp.commandBuffers[vulkcomp.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vulkcomp.layout, 0, 1, &vulkcomp.descriptorset, 0, nullptr);
 
-        for (const auto& obj : m_drawlist) {
+        for (size_t i = 0; i < Renderer::m_drawlist.size(); ++i) {
+            const auto& obj = Renderer::m_drawlist[i];
+
             GPUDrawPushConstants pushData{};
-            pushData.worldMatrix = viewproj * obj.modelMatrix;
+            glm::mat4 modelMat = Renderer::m_gameobjectlist[i].getModelMatrix();
+            pushData.worldMatrix = viewproj * modelMat;
             pushData.vertexBuffer = obj.vertexBufferAddress;
             pushData.textureIndex = obj.textureIndex;
 

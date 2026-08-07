@@ -1,8 +1,12 @@
 #pragma once
 
+#define GLM_ENABLE_EXPERIMENTAL
+
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_vulkan.h>
 #include <imgui/imgui_impl_glfw.h>
+
+#include <imguizmo/ImGuizmo.h>
 
 #include <iostream>
 #include <filesystem>
@@ -15,12 +19,21 @@
 #include <TinyOBJ/tiny_obj_loader.h>
 #include <GLFW/include/glfw3.h>
 
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
+
 #include "../Render/RendererTypes.h"
 #include "../Render/Renderer.h"
 #include "../Render/ObjectRenderer.h"
+#include "../Objects/GameObject.h"
 #include "../Vulkan/vulkTypes.h"
 #include "../Vulkan/vulkBackend.h"
 #include "texturehandler.h"
+
+struct PendingAsset {
+	RenderObject renderobj;
+	GameObject gameobj;
+};
 
 namespace AssetHandler
 {
@@ -43,6 +56,9 @@ namespace AssetHandler
 	void debugpanel();
 	void assetbrowser(VulkComponents vulkcomp);
 	void hierarchy(VulkComponents vulkcomp);
+
+	void drawgizmo(const glm::mat4& viewMatrix, const glm::mat4& projMatrix, glm::mat4& objectTransform);
+	void handlemousepicking(const glm::mat4& viewMatrix, const glm::mat4& projMatrix, int width, int height);
 
 	void loadobject(
 		const std::string& path,

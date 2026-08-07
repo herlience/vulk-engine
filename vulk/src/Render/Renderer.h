@@ -6,12 +6,14 @@
 #include "RendererTypes.h"
 #include "../Camera/Camera.h"
 #include "../AssetHandler/AssetHandler.h"
+#include "../Objects/GameObject.h"
 #include <span>
 #include <vector>
 
 namespace Renderer
 {
     inline std::vector<RenderObject> m_drawlist;
+    inline std::vector<GameObject> m_gameobjectlist;
 
     
     inline void addRenderObject(const RenderObject& obj) {

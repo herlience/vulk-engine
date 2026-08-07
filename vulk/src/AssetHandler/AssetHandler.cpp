@@ -5,17 +5,49 @@
 namespace AssetHandler {
 
     static std::vector<Mesh> s_parsedMeshes;
-    static std::queue<RenderObject> s_pendingRenderObjects;
+    static std::queue<PendingAsset> s_pendingRenderObjects;
     static std::mutex s_queueMutex;
 
     void RenderImGui(VulkComponents vulkcomp, VkCommandBuffer cmd) {
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+        ImGuizmo::BeginFrame();
+
+        ImGuiIO& io = ImGui::GetIO();
+        handlemousepicking(
+            CameraSystem::getviewmatrix(),
+            CameraSystem::getprojectionmatrix(), 
+            io.DisplaySize.x, 
+            io.DisplaySize.y
+        );
 
         debugpanel();
         assetbrowser(vulkcomp);
         hierarchy(vulkcomp);
+
+        if (selectedModelIndex >= 0 && selectedModelIndex < Renderer::m_drawlist.size())
+        {
+            GameObject& selectedObje = Renderer::m_gameobjectlist[selectedModelIndex];
+
+            glm::mat4 modelMatrix = selectedObje.getModelMatrix();
+
+            drawgizmo(
+                CameraSystem::getviewmatrix(),
+                CameraSystem::getprojectionmatrix(),
+                modelMatrix
+            );
+
+            if (ImGuizmo::IsUsing())
+            {
+                glm::vec3 skew;
+                glm::vec4 perspective;
+                glm::quat orientation;
+
+                glm::decompose(modelMatrix, selectedObje.scale, orientation, selectedObje.translation, skew, perspective);
+                selectedObje.rotation = glm::degrees(glm::eulerAngles(orientation));
+            }
+        }
 
         ImGui::Render();
 
@@ -122,6 +154,85 @@ namespace AssetHandler {
         }
 
         ImGui::End();
+    }
+
+    void drawgizmo(const glm::mat4& viewMatrix, const glm::mat4& projMatrix, glm::mat4& objectTransform) {
+        ImGuizmo::Enable(true);
+        ImGuizmo::SetOrthographic(false); 
+        ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList()); 
+
+        ImGuiIO& io = ImGui::GetIO();
+
+        ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+
+        static ImGuizmo::OPERATION currentOp = ImGuizmo::TRANSLATE;
+        static ImGuizmo::MODE currentMode = ImGuizmo::WORLD;
+
+        if (ImGui::IsKeyPressed(ImGuiKey_W)) currentOp = ImGuizmo::TRANSLATE;
+        if (ImGui::IsKeyPressed(ImGuiKey_E)) currentOp = ImGuizmo::ROTATE;
+        if (ImGui::IsKeyPressed(ImGuiKey_R)) currentOp = ImGuizmo::SCALE;
+
+        glm::mat4 correctedProj = projMatrix;
+        correctedProj[1][1] *= -1.0f; 
+
+        ImGuizmo::Manipulate(
+            glm::value_ptr(viewMatrix),
+            glm::value_ptr(correctedProj),
+            currentOp,
+            currentMode,
+            glm::value_ptr(objectTransform)
+        );
+    }
+
+    void handlemousepicking(const glm::mat4& viewMatrix, const glm::mat4& projMatrix, int width, int height) {
+        
+        if (ImGui::GetIO().WantCaptureMouse) return;
+
+        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+            ImVec2 mousePos = ImGui::GetMousePos();
+
+            
+            float x = (2.0f * mousePos.x) / static_cast<float>(width) - 1.0f;
+            float y = 1.0f - (2.0f * mousePos.y) / static_cast<float>(height); // Y-flip
+
+            
+            glm::vec4 rayStartNDC(x, y, -1.0f, 1.0f);
+            glm::vec4 rayEndNDC(x, y, 1.0f, 1.0f);
+
+            glm::mat4 invVP = glm::inverse(projMatrix * viewMatrix);
+            glm::vec4 rayStartWorld = invVP * rayStartNDC; rayStartWorld /= rayStartWorld.w;
+            glm::vec4 rayEndWorld = invVP * rayEndNDC;     rayEndWorld /= rayEndWorld.w;
+
+            glm::vec3 rayDir = glm::normalize(glm::vec3(rayEndWorld - rayStartWorld));
+            glm::vec3 rayOrigin = glm::vec3(rayStartWorld);
+
+            
+            int closestIndex = -1;
+            float minDistance = 999999.0f;
+
+            for (size_t i = 0; i < Renderer::m_gameobjectlist.size(); ++i) {
+                glm::vec3 objPos = Renderer::m_gameobjectlist[i].translation;
+
+                
+                glm::vec3 lineToObj = objPos - rayOrigin;
+                float projection = glm::dot(lineToObj, rayDir);
+
+                if (projection > 0.0f) { 
+                    glm::vec3 closestPoint = rayOrigin + rayDir * projection;
+                    float distToRay = glm::length(objPos - closestPoint);
+
+                    
+                    if (distToRay < 1.5f && projection < minDistance) {
+                        minDistance = projection;
+                        closestIndex = static_cast<int>(i);
+                    }
+                }
+            }
+
+            if (closestIndex != -1) {
+                selectedModelIndex = closestIndex; 
+            }
+        }
     }
 
     void loadobject(
@@ -252,19 +363,23 @@ namespace AssetHandler {
 
         s_parsedMeshes.push_back(newMesh);
         std::cout << " Mesh cached "
-                << " | Vertices: " << newMesh.vertexcount 
-                << " | Indices: " << newMesh.indexcount << std::endl;
+                << " | Vertices: " << static_cast<uint32_t>(outVertices.size())
+                << " | Indices: " << static_cast<uint32_t>(outIndices.size()) << std::endl;
 
         RenderObject newObj;
         newObj.indexBuffer = gpuBuffers.indexBuffer.buffer;
         newObj.vertexBufferAddress = gpuBuffers.vertexBufferAddress;
         newObj.indexCount = static_cast<uint32_t>(outIndices.size());
         newObj.firstIndex = 0;
-        newObj.modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+
+        GameObject newgameobj;
+        newgameobj.indexCount = static_cast<uint32_t>(outIndices.size());
+
+        PendingAsset assets = { newObj, newgameobj };
 
         {
             std::lock_guard<std::mutex> lock(s_queueMutex);
-            s_pendingRenderObjects.push(newObj);
+            s_pendingRenderObjects.push(assets);
         }
 
     }
@@ -273,10 +388,14 @@ namespace AssetHandler {
         std::lock_guard<std::mutex> lock(AssetHandler::s_queueMutex);
 
         while (!AssetHandler::s_pendingRenderObjects.empty()) {
-            RenderObject readyObj = AssetHandler::s_pendingRenderObjects.front();
+            PendingAsset readyObj = AssetHandler::s_pendingRenderObjects.front();
             AssetHandler::s_pendingRenderObjects.pop();
 
-            Renderer::addRenderObject(readyObj);
+            Renderer::addRenderObject(readyObj.renderobj);
+            uint32_t meshIndex = static_cast<uint32_t>(Renderer::m_drawlist.size() - 1);
+
+            readyObj.gameobj.renderObjectIndex = meshIndex;
+            Renderer::m_gameobjectlist.push_back(readyObj.gameobj);
         }
     }
 

@@ -93,6 +93,9 @@
     <ClInclude Include="src\Vulkan\Backend\vulkDescriptors.h">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
+    <ClInclude Include="vendor\imguizmo\ImGuizmo.h">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Vulkan\Backend\vulkWindow.cpp">
@@ -140,9 +143,6 @@
     <ClCompile Include="src\Render\Renderer.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
-    <ClCompile Include="src\Render\RendererTypes.cpp">
-      <Filter>Kaynak Dosyalar</Filter>
-    </ClCompile>
     <ClCompile Include="src\AssetHandler\AssetHandler.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
@@ -177,6 +177,9 @@
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
     <ClCompile Include="src\Vulkan\Backend\vulkDescriptors.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imguizmo\ImGuizmo.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
   </ItemGroup>

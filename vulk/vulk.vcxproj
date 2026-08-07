@@ -39,6 +39,7 @@
     <ClInclude Include="src\Vulkan\Backend\vulkBuffer.h" />
     <ClInclude Include="src\Vulkan\vulkTypes.h" />
     <ClInclude Include="src\AssetHandler\texturehandler.h" />
+    <ClInclude Include="vendor\imguizmo\ImGuizmo.h" />
     <ClInclude Include="vendor\imgui\imconfig.h" />
     <ClInclude Include="vendor\imgui\imgui.h" />
     <ClInclude Include="vendor\imgui\imgui_impl_glfw.h" />
@@ -50,7 +51,6 @@
     <ClCompile Include="src\Render\imguiinit.cpp" />
     <ClCompile Include="src\Render\ObjectRenderer.cpp" />
     <ClCompile Include="src\AssetHandler\AssetHandler.cpp" />
-    <ClCompile Include="src\Render\RendererTypes.cpp" />
     <ClCompile Include="src\Render\Renderer.cpp" />
     <ClCompile Include="src\Objects\GameObject.cpp" />
     <ClCompile Include="src\Camera\Camera.cpp" />
@@ -67,6 +67,7 @@
     <ClCompile Include="src\Vulkan\Backend\vulkRendering.cpp" />
     <ClCompile Include="src\Vulkan\Backend\vulkBuffer.cpp" />
     <ClCompile Include="src\AssetHandler\texturehandler.cpp" />
+    <ClCompile Include="vendor\imguizmo\ImGuizmo.cpp" />
     <ClCompile Include="vendor\imgui\imgui.cpp" />
     <ClCompile Include="vendor\imgui\imgui_demo.cpp" />
     <ClCompile Include="vendor\imgui\imgui_draw.cpp" />

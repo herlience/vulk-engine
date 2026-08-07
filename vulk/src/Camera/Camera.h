@@ -36,6 +36,8 @@ namespace CameraSystem
     void update(GLFWwindow* window, float deltaTime);
 
     glm::mat4 getViewProjectionMatrix(float width, float height);
+    glm::mat4& getviewmatrix();
+    glm::mat4& getprojectionmatrix();
 
     void mouseCallback(GLFWwindow* window, double xpos, double ypos);
 }

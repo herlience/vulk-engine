@@ -16,7 +16,6 @@
         obj.indexBuffer = indexBuffer;
         obj.indexCount = indexCount;
         obj.firstIndex = 0;
-        obj.modelMatrix = getModelMatrix();
         obj.vertexBufferAddress = vertexBufferAddress;
         return obj;
 	}

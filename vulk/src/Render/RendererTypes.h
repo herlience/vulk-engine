@@ -20,8 +20,7 @@ struct Vertex {
 struct RenderObject {
     VkBuffer indexBuffer;
     uint32_t indexCount;
-    uint32_t firstIndex;
-    glm::mat4 modelMatrix;
+    uint32_t firstIndex;  
     uint64_t vertexBufferAddress;
     uint32_t textureIndex;
 };
@@ -37,3 +36,4 @@ struct Mesh {
     uint32_t indexcount;
     uint32_t vertexcount;
 };
+

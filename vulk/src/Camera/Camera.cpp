@@ -110,4 +110,11 @@ namespace CameraSystem
 
         return mainCamera.projectionMatrix * mainCamera.viewMatrix;
     }
+
+    glm::mat4& getviewmatrix() {
+        return mainCamera.viewMatrix;
+    }
+    glm::mat4& getprojectionmatrix() {
+        return mainCamera.projectionMatrix;
+    }
 }
