@@ -1,6 +1,7 @@
 #include "AssetHandler.h"
 #include "../Render/Renderer.h"
 #include "../Vulkan/Backend/vulkBuffer.h"
+#include <imgui_internal.h> // Docking helper'larý için gereklidir
 
 namespace AssetHandler {
 
@@ -8,29 +9,86 @@ namespace AssetHandler {
     static std::queue<PendingAsset> s_pendingRenderObjects;
     static std::mutex s_queueMutex;
 
+    // View Panel (Eski debug paneli) kontrol deðiþkenleri
+    static bool showViewPanel = true;
+
     void RenderImGui(VulkComponents vulkcomp, VkCommandBuffer cmd) {
+        ImGuiIO& io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         ImGuizmo::BeginFrame();
 
-        ImGuiIO& io = ImGui::GetIO();
+        // -------------------------------------------------------------
+        // 1. DOCKSPACE KURULUMU (Ana Editör Çerçevesi)
+        // -------------------------------------------------------------
+
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+        ImGui::SetNextWindowViewport(viewport->ID);
+
+        ImGuiWindowFlags host_window_flags = 0;
+        host_window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+        host_window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+        host_window_flags |= ImGuiWindowFlags_NoBackground; // Oyun görüntüsünün arkada görünmesi için
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+        ImGui::Begin("MainDockSpaceWindow", nullptr, host_window_flags);
+        ImGui::PopStyleVar(3);
+
+        ImGuiID dockspace_id = ImGui::GetID("MyEngineDockSpace");
+        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+
+        // Varsayýlan Düzeni Otomatik Oluþtur (Ýlk Açýlýþta 4 Bölgeye Otomatik Yerleþtirir)
+        static bool firstTime = true;
+        if (firstTime) {
+            firstTime = false;
+
+            ImGui::DockBuilderRemoveNode(dockspace_id);
+            ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_DockSpace);
+            ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->Size);
+
+            ImGuiID dock_main_id = dockspace_id;
+            ImGuiID dock_left_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.20f, nullptr, &dock_main_id);
+            ImGuiID dock_right_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.25f, nullptr, &dock_main_id);
+            ImGuiID dock_down_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.25f, nullptr, &dock_main_id);
+
+            // Pencereleri bölgelere baðlama
+            ImGui::DockBuilderDockWindow("Hierarchy", dock_left_id);
+            ImGui::DockBuilderDockWindow("Inspector", dock_right_id);
+            ImGui::DockBuilderDockWindow("Asset Browser", dock_down_id);
+            ImGui::DockBuilderDockWindow("View", dock_left_id);
+
+            ImGui::DockBuilderFinish(dockspace_id);
+        }
+
+        ImGui::End(); // MainDockSpaceWindow bitiþi
+        // -------------------------------------------------------------
+
+        // Mouse Picking
         handlemousepicking(
             CameraSystem::getviewmatrix(),
-            CameraSystem::getprojectionmatrix(), 
-            io.DisplaySize.x, 
+            CameraSystem::getprojectionmatrix(),
+            io.DisplaySize.x,
             io.DisplaySize.y
         );
 
-        debugpanel();
+        // Editör Pencereleri
+        debugpanel(); // Artýk "View" adýyla çalýþýyor
         assetbrowser(vulkcomp);
         hierarchy(vulkcomp);
         inspector();
 
+        // Gizmo Mantýðý
         if (selectedModelIndex >= 0 && selectedModelIndex < static_cast<int>(Renderer::m_gameobjectlist.size()))
         {
             GameObject& selectedObje = Renderer::m_gameobjectlist[selectedModelIndex];
-
             glm::mat4 modelMatrix = selectedObje.getModelMatrix();
 
             bool isGizmoActive = drawgizmo(
@@ -46,26 +104,25 @@ namespace AssetHandler {
                 glm::quat orientation;
 
                 glm::decompose(modelMatrix, selectedObje.scale, orientation, selectedObje.translation, skew, perspective);
-
                 selectedObje.rotation = glm::normalize(orientation);
             }
         }
 
         ImGui::Render();
-
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
     }
 
+    // Eski debugpanel() -> Yeni "View" Paneli
     void debugpanel() {
-        ImGui::Begin("debug");
+        if (!showViewPanel) return;
 
-        if (ImGui::Button("show asset")) {
-            showAssetBrowser = !showAssetBrowser;
-        }
+        ImGui::Begin("View", &showViewPanel);
 
-        if (ImGui::Button("show hierarchy")) {
-            showHierarchy = !showHierarchy;
-        }
+        ImGui::Text("Pencereleri A/Kapat");
+        ImGui::Separator();
+
+        if (ImGui::Checkbox("Hierarchy", &showHierarchy)) {}
+        if (ImGui::Checkbox("Asset Browser", &showAssetBrowser)) {}
 
         ImGui::End();
     }
@@ -76,7 +133,7 @@ namespace AssetHandler {
                 cacheModels = get_obj_files();
             }
 
-            ImGui::Begin("asset browser", &showAssetBrowser);
+            ImGui::Begin("Asset Browser", &showAssetBrowser);
 
             for (size_t i = 0; i < cacheModels.size(); ++i) {
                 const auto& obje = cacheModels[i];
@@ -99,8 +156,8 @@ namespace AssetHandler {
     void hierarchy(VulkComponents vulkcomp) {
         if (!showHierarchy) return;
 
-        ImGui::Begin("hierarchy", &showHierarchy);
-        ImGui::Text("Mevcut Ogeler");
+        ImGui::Begin("Hierarchy", &showHierarchy);
+        ImGui::Text("Sahne Nesneleri");
         ImGui::Separator();
 
         for (size_t i = 0; i < Renderer::m_drawlist.size(); i++) {
@@ -116,18 +173,16 @@ namespace AssetHandler {
 
             if (ImGui::Button(btnLabel.c_str())) {
                 if (s_ActiveTexturePickerForObj == static_cast<int>(i)) {
-                    s_ActiveTexturePickerForObj = -1; 
+                    s_ActiveTexturePickerForObj = -1;
                 }
                 else {
-                    s_ActiveTexturePickerForObj = static_cast<int>(i); 
+                    s_ActiveTexturePickerForObj = static_cast<int>(i);
                 }
             }
 
             if (s_ActiveTexturePickerForObj == static_cast<int>(i)) {
-
-                ImGui::Indent(); 
-                ImGui::BeginChild(("TexPickerChild##" + std::to_string(i)).c_str(),
-                    ImVec2(0, 120), true); 
+                ImGui::Indent();
+                ImGui::BeginChild(("TexPickerChild##" + std::to_string(i)).c_str(), ImVec2(0, 120), true);
 
                 ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "--- Texture Secin ---");
 
@@ -145,13 +200,13 @@ namespace AssetHandler {
                     std::string selectBtn = "Sec##" + std::to_string(i) + "_" + std::to_string(t);
                     if (ImGui::Button(selectBtn.c_str())) {
                         uint32_t secilentexindex = texturehandler::loadtexturetoengine(texPath.c_str(), vulkcomp);
-                        obje.textureIndex = secilentexindex;                        
+                        obje.textureIndex = secilentexindex;
                         s_ActiveTexturePickerForObj = -1;
                     }
                 }
 
                 ImGui::EndChild();
-                ImGui::Unindent(); 
+                ImGui::Unindent();
             }
 
             ImGui::Separator();
@@ -194,11 +249,10 @@ namespace AssetHandler {
 
     bool drawgizmo(const glm::mat4& viewMatrix, const glm::mat4& projMatrix, glm::mat4& objectTransform) {
         ImGuizmo::Enable(true);
-        ImGuizmo::SetOrthographic(false); 
-        ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList()); 
+        ImGuizmo::SetOrthographic(false);
+        ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
 
         ImGuiIO& io = ImGui::GetIO();
-
         ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
 
         static ImGuizmo::OPERATION currentOp = ImGuizmo::TRANSLATE;
@@ -223,17 +277,14 @@ namespace AssetHandler {
     }
 
     void handlemousepicking(const glm::mat4& viewMatrix, const glm::mat4& projMatrix, int width, int height) {
-        
         if (ImGui::GetIO().WantCaptureMouse || ImGuizmo::IsOver()) return;
 
         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
             ImVec2 mousePos = ImGui::GetMousePos();
 
-            
             float x = (2.0f * mousePos.x) / static_cast<float>(width) - 1.0f;
-            float y = 1.0f - (2.0f * mousePos.y) / static_cast<float>(height); // Y-flip
+            float y = 1.0f - (2.0f * mousePos.y) / static_cast<float>(height);
 
-            
             glm::vec4 rayStartNDC(x, y, -1.0f, 1.0f);
             glm::vec4 rayEndNDC(x, y, 1.0f, 1.0f);
 
@@ -244,22 +295,19 @@ namespace AssetHandler {
             glm::vec3 rayDir = glm::normalize(glm::vec3(rayEndWorld - rayStartWorld));
             glm::vec3 rayOrigin = glm::vec3(rayStartWorld);
 
-            
             int closestIndex = -1;
             float minDistance = 999999.0f;
 
             for (size_t i = 0; i < Renderer::m_gameobjectlist.size(); ++i) {
                 glm::vec3 objPos = Renderer::m_gameobjectlist[i].translation;
 
-                
                 glm::vec3 lineToObj = objPos - rayOrigin;
                 float projection = glm::dot(lineToObj, rayDir);
 
-                if (projection > 0.0f) { 
+                if (projection > 0.0f) {
                     glm::vec3 closestPoint = rayOrigin + rayDir * projection;
                     float distToRay = glm::length(objPos - closestPoint);
 
-                    
                     if (distToRay < 1.5f && projection < minDistance) {
                         minDistance = projection;
                         closestIndex = static_cast<int>(i);
@@ -268,7 +316,7 @@ namespace AssetHandler {
             }
 
             if (closestIndex != -1) {
-                selectedModelIndex = closestIndex; 
+                selectedModelIndex = closestIndex;
             }
         }
     }
@@ -288,7 +336,6 @@ namespace AssetHandler {
         std::filesystem::path objPath(path);
         std::string materialFolder = objPath.parent_path().string() + "/";
 
-        
         if (objPath.parent_path().empty()) {
             materialFolder = "./";
         }
@@ -393,16 +440,12 @@ namespace AssetHandler {
             graphicsQueue
         );
 
-     
         Mesh newMesh;
         newMesh.buffers = gpuBuffers;
         newMesh.indexcount = static_cast<uint32_t>(outIndices.size());
         newMesh.vertexcount = static_cast<uint32_t>(outVertices.size());
 
         s_parsedMeshes.push_back(newMesh);
-        std::cout << " Mesh cached "
-                << " | Vertices: " << static_cast<uint32_t>(outVertices.size())
-                << " | Indices: " << static_cast<uint32_t>(outIndices.size()) << std::endl;
 
         RenderObject newObj;
         newObj.indexBuffer = gpuBuffers.indexBuffer.buffer;
@@ -419,7 +462,6 @@ namespace AssetHandler {
             std::lock_guard<std::mutex> lock(s_queueMutex);
             s_pendingRenderObjects.push(assets);
         }
-
     }
 
     void syncpendingobjects() {
@@ -466,11 +508,9 @@ namespace AssetHandler {
         for (const auto& entry : std::filesystem::directory_iterator(folderpath)) {
             if (entry.is_regular_file()) {
                 auto ext = entry.path().extension().string();
-                
                 if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
                     texfiles.push_back(entry.path().generic_string());
                 }
-            
             }
         }
 
