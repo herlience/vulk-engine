@@ -6,7 +6,7 @@ namespace vulkBackend {
 
 	SwapchainVariables swapchainvariables;
 	QueueFamilyIndices indices;
-	VulkComponents vulkcomp;
+	inline VulkComponents vulkcomp;
 
 	VkShaderModule mainvertshadermodule;
 	VkShaderModule mainfragshadermodule;
@@ -124,7 +124,7 @@ namespace vulkBackend {
 	}
 	
 
-	void DestroyVulk() {
+	void DestroyVulk(VulkComponents& vulkcomp) {
 		texturehandler::destroy_textures(vulkcomp);
 		AssetHandler::cleanup(vulkcomp.allocator);
 		Renderer::clearDrawlist();
@@ -139,9 +139,6 @@ namespace vulkBackend {
 		}
 
 		vkDestroyCommandPool(vulkcomp.device, vulkcomp.commandpool, nullptr);
-
-		vulkBuffer::destroy_image(vulkcomp.depthimage, vulkcomp.allocator);
-		vulkBuffer::destroy_imageview(vulkcomp.device, vulkcomp.depthimageview);
 
 		vulkBuffer::destory_sampler(vulkcomp.device, vulkcomp.defaulttexturesampler);
 
@@ -160,10 +157,7 @@ namespace vulkBackend {
 		vkDestroyShaderModule(vulkcomp.device, gridvertshadermodule, nullptr);
 		vkDestroyPipelineLayout(vulkcomp.device, vulkcomp.gridlayout, nullptr);
 
-		for (auto imageView : vulkcomp.imageViews) {
-			vkDestroyImageView(vulkcomp.device, imageView, nullptr);
-		}
-		vkDestroySwapchainKHR(vulkcomp.device, swapchainvariables.swapchain, nullptr);
+		vulkSwapchain::clean(vulkcomp);
 
 		vmaDestroyAllocator(vulkcomp.allocator);
 

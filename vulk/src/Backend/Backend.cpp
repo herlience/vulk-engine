@@ -50,12 +50,12 @@ namespace Backend {
                 static_cast<float>(vulkcomp.swapchainvariables.extent.height)
             );
 
-            Renderer::DrawFrame(vulkcomp);
+            Renderer::DrawFrame(vulkcomp, window, familyindex);
         }
 
         vulkBackend::WaitIdle();
         Imgui::destroy();
-        vulkBackend::DestroyVulk();
+        vulkBackend::DestroyVulk(vulkcomp);
     }
 }
 

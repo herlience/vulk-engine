@@ -3,13 +3,15 @@
 
 namespace Renderer {
     void DrawFrame(
-        VulkComponents& vulkcomp
+        VulkComponents& vulkcomp,
+         GLFWwindow* window,
+        QueueFamilyIndices indices
     ) {
         vkWaitForFences(vulkcomp.device, 1, &vulkcomp.inFlightFences[vulkcomp.currentFrame], VK_TRUE, UINT64_MAX);
         vkResetFences(vulkcomp.device, 1, &vulkcomp.inFlightFences[vulkcomp.currentFrame]);
 
         uint32_t imageIndex;
-        vkAcquireNextImageKHR(
+        VkResult result1 = vkAcquireNextImageKHR(
             vulkcomp.device,
             vulkcomp.swapchainvariables.swapchain,
             UINT64_MAX,
@@ -17,6 +19,11 @@ namespace Renderer {
             VK_NULL_HANDLE,
             &imageIndex
         );
+
+        if (result1 == VK_ERROR_OUT_OF_DATE_KHR) {
+            vulkSwapchain::recreateswapchain(vulkcomp, window, indices);
+            return;
+        }
 
         vkResetCommandBuffer(vulkcomp.commandBuffers[vulkcomp.currentFrame], 0);
 
@@ -216,9 +223,14 @@ namespace Renderer {
         presentInfo.pSwapchains = &vulkcomp.swapchainvariables.swapchain;
         presentInfo.pImageIndices = &imageIndex;
 
-        vkQueuePresentKHR(vulkcomp.presentQueue, &presentInfo);
+        VkResult result2 = vkQueuePresentKHR(vulkcomp.presentQueue, &presentInfo);
 
-        vulkcomp.currentFrame = (vulkcomp.currentFrame + 1) % vulkcomp.MAX_FRAMES_IN_FLIGHT;
+        if (result2 == VK_ERROR_OUT_OF_DATE_KHR || result2 == VK_SUBOPTIMAL_KHR) {
+            vulkSwapchain::recreateswapchain(vulkcomp, window, indices);
+        }
+        else {
+            vulkcomp.currentFrame = (vulkcomp.currentFrame + 1) % vulkcomp.MAX_FRAMES_IN_FLIGHT;
+        }
     }
 
     void removeRenderObjectsByIndexBuffer(VkBuffer buffer) {

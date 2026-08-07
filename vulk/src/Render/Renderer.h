@@ -25,7 +25,9 @@ namespace Renderer
     }
 
     void DrawFrame(
-        VulkComponents& vulkcomp
+        VulkComponents& vulkcomp,
+        GLFWwindow* window,
+        QueueFamilyIndices indices
     );
     void removeRenderObjectsByIndexBuffer(VkBuffer buffer);
 }

@@ -102,17 +102,87 @@ namespace vulkSwapchain {
         return swapchainImageViews;
     }
 
-    void clean(VkDevice logicalDevice, VkSwapchainKHR& vulkSwapchain, std::vector<VkImageView>& swapchainImageViews, std::vector<VkImage>& swapchainImages) {
-        for (auto imageView : swapchainImageViews) {
-            vkDestroyImageView(logicalDevice, imageView, nullptr);
+    void recreateswapchain(VulkComponents& vulkcomp, GLFWwindow* window, QueueFamilyIndices indices) {
+        int width = 0, height = 0;
+        glfwGetFramebufferSize(window, &width, &height);
+        while (width == 0 || height == 0) {
+            glfwGetFramebufferSize(window, &width, &height);
+            glfwWaitEvents();
         }
-        swapchainImageViews.clear();
 
-        if (vulkSwapchain != VK_NULL_HANDLE) {
-            vkDestroySwapchainKHR(logicalDevice, vulkSwapchain, nullptr);
-            vulkSwapchain = VK_NULL_HANDLE;
+        vkDeviceWaitIdle(vulkcomp.device);
+
+        for (auto imageView : vulkcomp.imageViews) {
+            vkDestroyImageView(vulkcomp.device, imageView, nullptr);
         }
-        swapchainImages.clear();
+        vulkcomp.imageViews.clear();
+
+        if (vulkcomp.depthimageview != VK_NULL_HANDLE) {
+            vulkBuffer::destroy_imageview(vulkcomp.device, vulkcomp.depthimageview);
+            vulkcomp.depthimageview = VK_NULL_HANDLE;
+        }
+        if (vulkcomp.depthimage.image != VK_NULL_HANDLE) {
+            vulkBuffer::destroy_image(vulkcomp.depthimage, vulkcomp.allocator);
+            vulkcomp.depthimage.image = VK_NULL_HANDLE;
+        }
+
+        if (vulkcomp.swapchainvariables.swapchain != VK_NULL_HANDLE) {
+            vkDestroySwapchainKHR(vulkcomp.device, vulkcomp.swapchainvariables.swapchain, nullptr);
+            vulkcomp.swapchainvariables.swapchain = VK_NULL_HANDLE;
+        }
+
+        vulkcomp.swapchainvariables = create(
+            vulkcomp.instance,
+            vulkcomp.physicaldevice,
+            vulkcomp.device,
+            window,
+            vulkcomp.surface,
+            indices
+        );
+
+        vulkcomp.imageViews = createImageViews(
+            vulkcomp.device,
+            vulkcomp.swapchainvariables.images,
+            vulkcomp.swapchainvariables.format
+        );
+
+        vulkcomp.threedextenttanimlama();
+
+        vulkcomp.depthimage = vulkBuffer::create_image(
+            vulkcomp.threedextent,
+            VK_FORMAT_D32_SFLOAT,
+            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+            vulkcomp.allocator
+        );
+
+        vulkcomp.depthimageview = vulkBuffer::createimageview(
+            vulkcomp.depthimage,
+            vulkcomp.device,
+            VK_IMAGE_ASPECT_DEPTH_BIT
+        );
+    }
+
+    void clean(VulkComponents& vulkcomp) {
+        for (auto imageView : vulkcomp.imageViews) {
+            if (imageView != VK_NULL_HANDLE) {
+                vkDestroyImageView(vulkcomp.device, imageView, nullptr);
+            }
+        }
+        vulkcomp.imageViews.clear();
+
+        if (vulkcomp.depthimageview != VK_NULL_HANDLE) {
+            vkDestroyImageView(vulkcomp.device, vulkcomp.depthimageview, nullptr);
+            vulkcomp.depthimageview = VK_NULL_HANDLE;
+        }
+
+        vulkBuffer::destroy_image(vulkcomp.depthimage, vulkcomp.allocator);
+
+        if (vulkcomp.swapchainvariables.swapchain != VK_NULL_HANDLE) {
+            vkDestroySwapchainKHR(vulkcomp.device, vulkcomp.swapchainvariables.swapchain, nullptr);
+            vulkcomp.swapchainvariables.swapchain = VK_NULL_HANDLE;
+        }
+
+        vulkcomp.swapchainvariables.images.clear();
     }
 
     SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface) {

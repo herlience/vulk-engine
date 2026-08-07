@@ -20,7 +20,7 @@
 
 namespace vulkBackend {
 	void InitVulk();
-	void DestroyVulk();
+	void DestroyVulk(VulkComponents& vulkcomp);
 	void WaitIdle();
 
 	GLFWwindow* getwindow();
