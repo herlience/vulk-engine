@@ -56,8 +56,9 @@ namespace AssetHandler
 	void debugpanel();
 	void assetbrowser(VulkComponents vulkcomp);
 	void hierarchy(VulkComponents vulkcomp);
+	void inspector();
 
-	void drawgizmo(const glm::mat4& viewMatrix, const glm::mat4& projMatrix, glm::mat4& objectTransform);
+	bool drawgizmo(const glm::mat4& viewMatrix, const glm::mat4& projMatrix, glm::mat4& objectTransform);
 	void handlemousepicking(const glm::mat4& viewMatrix, const glm::mat4& projMatrix, int width, int height);
 
 	void loadobject(

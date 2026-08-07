@@ -25,27 +25,29 @@ namespace AssetHandler {
         debugpanel();
         assetbrowser(vulkcomp);
         hierarchy(vulkcomp);
+        inspector();
 
-        if (selectedModelIndex >= 0 && selectedModelIndex < Renderer::m_drawlist.size())
+        if (selectedModelIndex >= 0 && selectedModelIndex < static_cast<int>(Renderer::m_gameobjectlist.size()))
         {
             GameObject& selectedObje = Renderer::m_gameobjectlist[selectedModelIndex];
 
             glm::mat4 modelMatrix = selectedObje.getModelMatrix();
 
-            drawgizmo(
+            bool isGizmoActive = drawgizmo(
                 CameraSystem::getviewmatrix(),
                 CameraSystem::getprojectionmatrix(),
                 modelMatrix
             );
 
-            if (ImGuizmo::IsUsing())
+            if (isGizmoActive)
             {
                 glm::vec3 skew;
                 glm::vec4 perspective;
                 glm::quat orientation;
 
                 glm::decompose(modelMatrix, selectedObje.scale, orientation, selectedObje.translation, skew, perspective);
-                selectedObje.rotation = glm::degrees(glm::eulerAngles(orientation));
+
+                selectedObje.rotation = glm::normalize(orientation);
             }
         }
 
@@ -84,7 +86,6 @@ namespace AssetHandler {
 
                 std::string btnLabel = std::string("Load##") + std::to_string(i);
                 if (ImGui::Button(btnLabel.c_str())) {
-                    selectedModelIndex = static_cast<int>(i);
                     loadobject(obje, vulkcomp.device, vulkcomp.allocator, vulkcomp.commandpool, vulkcomp.graphicsQueue);
                 }
             }
@@ -105,7 +106,10 @@ namespace AssetHandler {
         for (size_t i = 0; i < Renderer::m_drawlist.size(); i++) {
             auto& obje = Renderer::m_drawlist[i];
 
-            ImGui::Text("Obj %zu | Tex ID: %u", i, obje.textureIndex);
+            std::string selectableLabel = "Obj " + std::to_string(i) + " | Tex ID: " + std::to_string(obje.textureIndex);
+            if (ImGui::Selectable(selectableLabel.c_str(), selectedModelIndex == static_cast<int>(i))) {
+                selectedModelIndex = static_cast<int>(i);
+            }
             ImGui::SameLine();
 
             std::string btnLabel = "Load Texture##" + std::to_string(i);
@@ -156,7 +160,39 @@ namespace AssetHandler {
         ImGui::End();
     }
 
-    void drawgizmo(const glm::mat4& viewMatrix, const glm::mat4& projMatrix, glm::mat4& objectTransform) {
+    void inspector() {
+        ImGui::Begin("Inspector");
+
+        if (selectedModelIndex >= 0 && selectedModelIndex < static_cast<int>(Renderer::m_gameobjectlist.size())) {
+            auto& selectedObje = Renderer::m_gameobjectlist[selectedModelIndex];
+
+            ImGui::Text("Obje Index: %d", selectedModelIndex);
+            ImGui::Separator();
+
+            ImGui::DragFloat3("Position", glm::value_ptr(selectedObje.translation), 0.1f);
+
+            glm::vec3 eulerAngles = glm::degrees(glm::eulerAngles(selectedObje.rotation));
+            if (ImGui::DragFloat3("Rotation (Deg)", glm::value_ptr(eulerAngles), 0.5f)) {
+                selectedObje.rotation = glm::quat(glm::radians(eulerAngles));
+            }
+
+            ImGui::DragFloat3("Scale", glm::value_ptr(selectedObje.scale), 0.1f);
+
+            ImGui::Separator();
+            if (ImGui::Button("Reset Transform")) {
+                selectedObje.translation = glm::vec3(0.0f);
+                selectedObje.rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+                selectedObje.scale = glm::vec3(1.0f);
+            }
+        }
+        else {
+            ImGui::Text("Lutfen sahneden veya Hierarchy'den bir obje secin.");
+        }
+
+        ImGui::End();
+    }
+
+    bool drawgizmo(const glm::mat4& viewMatrix, const glm::mat4& projMatrix, glm::mat4& objectTransform) {
         ImGuizmo::Enable(true);
         ImGuizmo::SetOrthographic(false); 
         ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList()); 
@@ -166,14 +202,14 @@ namespace AssetHandler {
         ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
 
         static ImGuizmo::OPERATION currentOp = ImGuizmo::TRANSLATE;
-        static ImGuizmo::MODE currentMode = ImGuizmo::WORLD;
+        static ImGuizmo::MODE currentMode = ImGuizmo::LOCAL;
 
         if (ImGui::IsKeyPressed(ImGuiKey_W)) currentOp = ImGuizmo::TRANSLATE;
         if (ImGui::IsKeyPressed(ImGuiKey_E)) currentOp = ImGuizmo::ROTATE;
         if (ImGui::IsKeyPressed(ImGuiKey_R)) currentOp = ImGuizmo::SCALE;
 
         glm::mat4 correctedProj = projMatrix;
-        correctedProj[1][1] *= -1.0f; 
+        correctedProj[1][1] *= -1.0f;
 
         ImGuizmo::Manipulate(
             glm::value_ptr(viewMatrix),
@@ -182,11 +218,13 @@ namespace AssetHandler {
             currentMode,
             glm::value_ptr(objectTransform)
         );
+
+        return ImGuizmo::IsUsing();
     }
 
     void handlemousepicking(const glm::mat4& viewMatrix, const glm::mat4& projMatrix, int width, int height) {
         
-        if (ImGui::GetIO().WantCaptureMouse) return;
+        if (ImGui::GetIO().WantCaptureMouse || ImGuizmo::IsOver()) return;
 
         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
             ImVec2 mousePos = ImGui::GetMousePos();
@@ -396,6 +434,8 @@ namespace AssetHandler {
 
             readyObj.gameobj.renderObjectIndex = meshIndex;
             Renderer::m_gameobjectlist.push_back(readyObj.gameobj);
+
+            selectedModelIndex = static_cast<int>(Renderer::m_gameobjectlist.size() - 1);
         }
     }
 

@@ -1,14 +1,11 @@
 #include "GameObject.h"
 
 	glm::mat4 GameObject::getModelMatrix() const {
-        glm::mat4 model = glm::translate(glm::mat4(1.0f), translation);
+        glm::mat4 T = glm::translate(glm::mat4(1.0f), translation);
+        glm::mat4 R = glm::mat4_cast(rotation);
+        glm::mat4 S = glm::scale(glm::mat4(1.0f), scale);
 
-        model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-
-        model = glm::scale(model, scale);
-        return model;
+        return T * R * S;
 	}
 
 	RenderObject GameObject::getRenderState() {
