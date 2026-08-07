@@ -3,10 +3,15 @@
 #include <iostream>
 #include "texturehandler.h"
 #include "../Vulkan/Backend/vulkBuffer.h"
+#include "../Vulkan/Backend/vulkDescriptors.h"
+#include <vector>
 
 namespace texturehandler {
-	texture loadtexturefile(const char* filepath, VulkComponents vulkcomp) {
-		texture tex;
+	inline std::vector<Texture> m_loadedtextures;
+	inline uint32_t currenttextureindex = 0;
+
+	Texture loadtexturefile(const char* filepath, VulkComponents vulkcomp) {
+		Texture tex;
 		int w, h, channels;
 		
 		stbi_uc* pixels = stbi_load(filepath, &w, &h, &channels, STBI_rgb_alpha);
@@ -44,5 +49,25 @@ namespace texturehandler {
 		tex.sampler = vulkcomp.defaulttexturesampler;
 
 		return tex;
+	}
+
+	uint32_t loadtexturetoengine(const char* filepath, VulkComponents vulkcomp) {
+		Texture newTex = loadtexturefile(filepath, vulkcomp);
+
+		uint32_t assignedslot = currenttextureindex++;
+		vulkDescriptors::update_descriptor_set(vulkcomp.device, newTex, vulkcomp.descriptorset, assignedslot);
+
+		m_loadedtextures.push_back(newTex);
+
+		return assignedslot;
+	}
+
+	void destroy_textures(VulkComponents vulkcomp) {
+		for (auto& tex : m_loadedtextures) {
+			vkDestroyImageView(vulkcomp.device, tex.imageView, nullptr);
+			vmaDestroyImage(vulkcomp.allocator, tex.image.image, tex.image.allocation);
+		}
+		m_loadedtextures.clear();
+		currenttextureindex = NULL;
 	}
 }

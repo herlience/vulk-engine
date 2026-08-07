@@ -34,8 +34,9 @@ namespace vulkBackend {
 		vulkcomp.swapchainvariables = swapchainvariables;
 		vulkcomp.imageViews = vulkSwapchain::createImageViews(vulkcomp.device, swapchainvariables.images, swapchainvariables.format);
 
-		vulkcomp.descriptorsetlayout = vulkDescriptors::create_descriptor_set_layout(vulkcomp.device, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-		vulkcomp.descriptorpool = vulkDescriptors::create_descriptor_pool(vulkcomp.device, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+		vulkcomp.descriptorsetlayout = vulkDescriptors::create_descriptor_set_layout(vulkcomp.device);
+		vulkcomp.descriptorpool = vulkDescriptors::create_descriptor_pool(vulkcomp.device);
+		vulkcomp.descriptorset = vulkDescriptors::create_descriptor_set(vulkcomp.device, vulkcomp.descriptorsetlayout, vulkcomp.descriptorpool);
 
 		vulkcomp.layout = vulkGraphicsPipeline::CreatePipelineLayout(vulkcomp.device, vulkcomp.descriptorsetlayout);
 		auto vertShaderCode = vulkShaderModule::readFile("res/Shaders/vert.spv");
@@ -91,6 +92,7 @@ namespace vulkBackend {
 	
 
 	void DestroyVulk() {
+		texturehandler::destroy_textures(vulkcomp);
 		AssetHandler::cleanup(vulkcomp.allocator);
 		Renderer::clearDrawlist();
 

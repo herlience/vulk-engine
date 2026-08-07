@@ -10,7 +10,8 @@ namespace vulkBuffer {
 
         VmaAllocationCreateInfo vmaallocInfo = {};
         vmaallocInfo.usage = memoryUsage;
-        vmaallocInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+        vmaallocInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT |
+            VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
         AllocatedBuffer newBuffer;
 
         VK_CHECK(vmaCreateBuffer(_allocator, &bufferInfo, &vmaallocInfo, &newBuffer.buffer, &newBuffer.allocation, &newBuffer.info));

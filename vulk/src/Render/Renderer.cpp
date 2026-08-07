@@ -111,11 +111,13 @@ namespace Renderer {
 
         AssetHandler::syncpendingobjects();
 
+        vkCmdBindDescriptorSets(vulkcomp.commandBuffers[vulkcomp.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vulkcomp.layout, 0, 1, &vulkcomp.descriptorset, 0, nullptr);
 
         for (const auto& obj : m_drawlist) {
             GPUDrawPushConstants pushData{};
             pushData.worldMatrix = viewproj * obj.modelMatrix;
             pushData.vertexBuffer = obj.vertexBufferAddress;
+            pushData.textureIndex = obj.textureIndex;
 
             vkCmdPushConstants(vulkcomp.commandBuffers[vulkcomp.currentFrame], vulkcomp.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushData);
 

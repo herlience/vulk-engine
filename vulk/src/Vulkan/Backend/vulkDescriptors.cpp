@@ -2,19 +2,26 @@
 #include "../vulkTypes.h"
 
 namespace vulkDescriptors {
-	VkDescriptorSetLayout create_descriptor_set_layout(VkDevice device, uint32_t binding, VkDescriptorType descriptortype, VkShaderStageFlags stageflag, VkDescriptorSetLayoutCreateFlags flag) {
+	VkDescriptorSetLayout create_descriptor_set_layout(VkDevice device) {
 		VkDescriptorSetLayoutBinding layoutbinding{
-			.binding = binding,
-			.descriptorType = descriptortype,
-			.descriptorCount = 1,
-			.stageFlags = stageflag,
+			.binding = 0,
+			.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+			.descriptorCount = 10000,
+			.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
 			.pImmutableSamplers = nullptr
 		};
 
+		VkDescriptorBindingFlags bindingFlags = VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT; 
+
+		VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
+		bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+		bindingFlagsInfo.bindingCount = 1;
+		bindingFlagsInfo.pBindingFlags = &bindingFlags;
+
 		VkDescriptorSetLayoutCreateInfo layoutinfo{
 			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-			.pNext = nullptr,
-			.flags = flag,
+			.pNext = &bindingFlagsInfo,
+			.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT,
 			.bindingCount = 1,
 			.pBindings = &layoutbinding
 		};
@@ -25,16 +32,19 @@ namespace vulkDescriptors {
 		return desclayout;
 	}
 
-	VkDescriptorPool create_descriptor_pool(VkDevice device, VkDescriptorType descriptortype, uint32_t descriptorcount, uint32_t maxsets) {
+	VkDescriptorPool create_descriptor_pool(VkDevice device) {
+		uint32_t desccount = 10000;
+		uint32_t maxsets = 1;
+
 		VkDescriptorPoolSize poolsize{
-			.type = descriptortype,
-			.descriptorCount = descriptorcount
+			.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+			.descriptorCount = desccount
 		};
 
 		VkDescriptorPoolCreateInfo poolcreateinfo{
 			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
 			.pNext = nullptr,
-			.flags = 0,
+			.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT,
 			.maxSets = maxsets,
 			.poolSizeCount = 1,
 			.pPoolSizes = &poolsize
@@ -47,9 +57,16 @@ namespace vulkDescriptors {
 	}
 
 	VkDescriptorSet create_descriptor_set(VkDevice device, VkDescriptorSetLayout layout, VkDescriptorPool pool) {
+		uint32_t variablesdesccount = 10000;
+
+		VkDescriptorSetVariableDescriptorCountAllocateInfo variableCountInfo{};
+		variableCountInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
+		variableCountInfo.descriptorSetCount = 1;
+		variableCountInfo.pDescriptorCounts = &variablesdesccount;
+		
 		VkDescriptorSetAllocateInfo allocinfo{
 			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-			.pNext = nullptr,
+			.pNext = &variableCountInfo,
 			.descriptorPool = pool,
 			.descriptorSetCount = 1,
 			.pSetLayouts = &layout
@@ -61,7 +78,7 @@ namespace vulkDescriptors {
 		return descset;
 	}
 
-	void update_descriptor_set(VkDevice device, texture tex, VkDescriptorSet descset, VkDescriptorType descriptortype) {
+	void update_descriptor_set(VkDevice device, Texture tex, VkDescriptorSet descset, uint32_t slotindex) {
 		VkDescriptorImageInfo imageinfo{
 			.sampler = tex.sampler,
 			.imageView = tex.imageView,
@@ -73,9 +90,9 @@ namespace vulkDescriptors {
 			.pNext = nullptr,
 			.dstSet = descset,
 			.dstBinding = 0,
-			.dstArrayElement = 0,
+			.dstArrayElement = slotindex,
 			.descriptorCount = 1,
-			.descriptorType = descriptortype,
+			.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			.pImageInfo = &imageinfo,
 			.pBufferInfo = nullptr,
 			.pTexelBufferView = nullptr

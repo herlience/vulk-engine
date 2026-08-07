@@ -65,26 +65,37 @@ struct VulkComponents {
     VkInstance instance = VK_NULL_HANDLE;
     VkDebugUtilsMessengerEXT debugmessenger = VK_NULL_HANDLE;
     VkSurfaceKHR surface = VK_NULL_HANDLE;
+
     VkPhysicalDevice physicaldevice = VK_NULL_HANDLE;
     VkDevice device = VK_NULL_HANDLE;
+
     SwapchainVariables swapchainvariables;
     std::vector<VkImageView> imageViews;
+
     VkPipeline pipeline = VK_NULL_HANDLE;
     VkPipelineLayout layout = VK_NULL_HANDLE;
+
     VkDescriptorSetLayout descriptorsetlayout;
     VkDescriptorPool descriptorpool;
+    VkDescriptorSet descriptorset;
+
     std::vector<VkCommandBuffer> commandBuffers;
+
     VkQueue graphicsQueue = VK_NULL_HANDLE;
     VkQueue presentQueue = VK_NULL_HANDLE;
+
     size_t currentFrame;
     int MAX_FRAMES_IN_FLIGHT;
+
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
     std::vector<VkFence> inFlightFences;
+
     VkBuffer vertexbuffer = VK_NULL_HANDLE;
     VkCommandPool commandpool = VK_NULL_HANDLE;
     VkDeviceMemory vertexbuffermemory = VK_NULL_HANDLE;
     PFN_vkCmdSetVertexInputEXT fnCmdSetVertexInputEXT = VK_NULL_HANDLE;
+
     VmaAllocator allocator;
     AllocatedImage depthimage;
     VkImageView depthimageview = VK_NULL_HANDLE;

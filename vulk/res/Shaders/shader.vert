@@ -5,6 +5,7 @@
 layout (location = 0) out vec3 outColor;
 layout (location = 1) out vec2 outUV;
 layout (location = 2) out vec3 outNormal; 
+layout (location = 3) flat out uint outTextureIndex;
 
 struct Vertex {
     vec3 position;
@@ -23,6 +24,7 @@ layout( push_constant ) uniform constants
 {   
     mat4 render_matrix;
     VertexBuffer vertexBuffer;
+    uint textureIndex;
 } PushConstants;
 
 void main() 
@@ -38,4 +40,5 @@ void main()
     
     
     outNormal = mat3(PushConstants.render_matrix) * v.normal;
+    outTextureIndex = PushConstants.textureIndex;
 }

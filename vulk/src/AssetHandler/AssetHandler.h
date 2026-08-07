@@ -20,14 +20,21 @@
 #include "../Render/ObjectRenderer.h"
 #include "../Vulkan/vulkTypes.h"
 #include "../Vulkan/vulkBackend.h"
+#include "texturehandler.h"
 
 namespace AssetHandler
 {
 	std::vector<std::string> get_obj_files(const std::string& folderpath = "res");
+	std::vector<std::string> get_tex_files(const std::string folderpath = "res/Textures");
 
 	inline std::vector<std::string> cacheModels = get_obj_files();
+	inline std::vector<std::string> cacheTextures = get_tex_files();
+
 	static int selectedModelIndex = -1;
+
 	static bool showAssetBrowser = false;
+	static bool showHierarchy = false;
+	static bool showTextureHierarchy = false;
 
 	void syncpendingobjects();
 
@@ -35,6 +42,7 @@ namespace AssetHandler
 	
 	void debugpanel();
 	void assetbrowser(VulkComponents vulkcomp);
+	void hierarchy(VulkComponents vulkcomp);
 
 	void loadobject(
 		const std::string& path,

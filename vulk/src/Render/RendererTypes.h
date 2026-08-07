@@ -3,9 +3,10 @@
 #include <glm/glm.hpp>
 #include "../Vulkan/vulkTypes.h"
 
-struct GPUDrawPushConstants {
+struct alignas(16) GPUDrawPushConstants {
     glm::mat4 worldMatrix;
     VkDeviceAddress vertexBuffer;
+    uint32_t textureIndex;
 };
 
 struct Vertex {
@@ -22,6 +23,7 @@ struct RenderObject {
     uint32_t firstIndex;
     glm::mat4 modelMatrix;
     uint64_t vertexBufferAddress;
+    uint32_t textureIndex;
 };
 
 struct GPUMeshBuffers {

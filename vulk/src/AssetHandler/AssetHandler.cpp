@@ -15,6 +15,7 @@ namespace AssetHandler {
 
         debugpanel();
         assetbrowser(vulkcomp);
+        hierarchy(vulkcomp);
 
         ImGui::Render();
 
@@ -26,6 +27,10 @@ namespace AssetHandler {
 
         if (ImGui::Button("show asset")) {
             showAssetBrowser = !showAssetBrowser;
+        }
+
+        if (ImGui::Button("show hierarchy")) {
+            showHierarchy = !showHierarchy;
         }
 
         ImGui::End();
@@ -54,6 +59,69 @@ namespace AssetHandler {
 
             ImGui::End();
         }
+    }
+
+    static int s_ActiveTexturePickerForObj = -1;
+
+    void hierarchy(VulkComponents vulkcomp) {
+        if (!showHierarchy) return;
+
+        ImGui::Begin("hierarchy", &showHierarchy);
+        ImGui::Text("Mevcut Ogeler");
+        ImGui::Separator();
+
+        for (size_t i = 0; i < Renderer::m_drawlist.size(); i++) {
+            auto& obje = Renderer::m_drawlist[i];
+
+            ImGui::Text("Obj %zu | Tex ID: %u", i, obje.textureIndex);
+            ImGui::SameLine();
+
+            std::string btnLabel = "Load Texture##" + std::to_string(i);
+
+            if (ImGui::Button(btnLabel.c_str())) {
+                if (s_ActiveTexturePickerForObj == static_cast<int>(i)) {
+                    s_ActiveTexturePickerForObj = -1; 
+                }
+                else {
+                    s_ActiveTexturePickerForObj = static_cast<int>(i); 
+                }
+            }
+
+            if (s_ActiveTexturePickerForObj == static_cast<int>(i)) {
+
+                ImGui::Indent(); 
+                ImGui::BeginChild(("TexPickerChild##" + std::to_string(i)).c_str(),
+                    ImVec2(0, 120), true); 
+
+                ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "--- Texture Secin ---");
+
+                if (cacheTextures.empty()) {
+                    cacheTextures = get_tex_files();
+                }
+
+                for (size_t t = 0; t < cacheTextures.size(); ++t) {
+                    const auto& texPath = cacheTextures[t];
+
+                    std::string fileName = std::filesystem::path(texPath).filename().string();
+                    ImGui::Text("%s", fileName.c_str());
+                    ImGui::SameLine();
+
+                    std::string selectBtn = "Sec##" + std::to_string(i) + "_" + std::to_string(t);
+                    if (ImGui::Button(selectBtn.c_str())) {
+                        uint32_t secilentexindex = texturehandler::loadtexturetoengine(texPath.c_str(), vulkcomp);
+                        obje.textureIndex = secilentexindex;                        
+                        s_ActiveTexturePickerForObj = -1;
+                    }
+                }
+
+                ImGui::EndChild();
+                ImGui::Unindent(); 
+            }
+
+            ImGui::Separator();
+        }
+
+        ImGui::End();
     }
 
     void loadobject(
@@ -226,6 +294,28 @@ namespace AssetHandler {
             }
         }
         return objFiles;
+    }
+
+    std::vector<std::string> get_tex_files(const std::string folderpath) {
+        std::vector<std::string> texfiles;
+
+        if (!std::filesystem::exists(folderpath) || !std::filesystem::is_directory(folderpath)) {
+            std::cerr << "textures klasorunu bulamadim" << std::endl;
+            return texfiles;
+        }
+
+        for (const auto& entry : std::filesystem::directory_iterator(folderpath)) {
+            if (entry.is_regular_file()) {
+                auto ext = entry.path().extension().string();
+                
+                if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
+                    texfiles.push_back(entry.path().generic_string());
+                }
+            
+            }
+        }
+
+        return texfiles;
     }
 
     void cleanup(VmaAllocator allocator) {

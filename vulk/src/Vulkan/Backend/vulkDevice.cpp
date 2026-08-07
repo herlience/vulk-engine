@@ -82,6 +82,10 @@ namespace vulkDevice {
         VkPhysicalDeviceVulkan12Features features12 = {};
         features12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
         features12.bufferDeviceAddress = VK_TRUE;
+        features12.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
+        features12.descriptorBindingPartiallyBound = VK_TRUE;
+        features12.descriptorBindingVariableDescriptorCount = VK_TRUE;
+        features12.runtimeDescriptorArray = VK_TRUE;
         features12.pNext = nullptr;
 
         VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT dynamicVertexFeatures{};

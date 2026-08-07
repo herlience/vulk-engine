@@ -3,7 +3,7 @@
 #include <cstdint>
 #include "../Vulkan/vulkTypes.h"
 
-struct texture {
+struct Texture {
     AllocatedImage image;
     VkDeviceMemory imageMemory = VK_NULL_HANDLE;
     VkExtent3D texextent;
@@ -14,6 +14,9 @@ struct texture {
 };
 
 namespace texturehandler {
-	texture loadtexturefile(const char* filepath, VulkComponents vulkcomp);
+	Texture loadtexturefile(const char* filepath, VulkComponents vulkcomp);
+    uint32_t loadtexturetoengine(const char* filepath, VulkComponents vulkcomp);
+
+    void destroy_textures(VulkComponents vulkcomp);
 }
 

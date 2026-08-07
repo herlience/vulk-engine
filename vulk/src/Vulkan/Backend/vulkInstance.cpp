@@ -10,7 +10,20 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
     void* pUserData) {
 
-    std::cerr << "Validation Layer: " << pCallbackData->pMessage << std::endl;
+    const char* RED = "\033[31m";
+    const char* YELLOW = "\033[33m";
+    const char* GREEN = "\033[32m";
+    const char* RESET = "\033[0m";
+
+    if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+        std::cout << RED << "[VULKAN ERROR]: " << pCallbackData->pMessage << RESET << std::endl;
+    }
+    else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+        std::cout << YELLOW << "[VULKAN WARN]: " << pCallbackData->pMessage << RESET << std::endl;
+    }
+    else {
+        std::cout << GREEN << "[VULKAN INFO]: " << pCallbackData->pMessage << RESET << std::endl;
+    }
     return VK_FALSE;
 }
 
