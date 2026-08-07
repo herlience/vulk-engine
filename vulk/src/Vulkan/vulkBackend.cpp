@@ -8,8 +8,11 @@ namespace vulkBackend {
 	QueueFamilyIndices indices;
 	VulkComponents vulkcomp;
 
-	VkShaderModule vertshadermodule;
-	VkShaderModule fragshadermodule;
+	VkShaderModule mainvertshadermodule;
+	VkShaderModule mainfragshadermodule;
+
+	VkShaderModule gridvertshadermodule;
+	VkShaderModule gridfragshadermodule;
 
 	const int WIDTH = 1200;
 	const int HEIGHT = 800;
@@ -34,16 +37,46 @@ namespace vulkBackend {
 		vulkcomp.swapchainvariables = swapchainvariables;
 		vulkcomp.imageViews = vulkSwapchain::createImageViews(vulkcomp.device, swapchainvariables.images, swapchainvariables.format);
 
-		vulkcomp.descriptorsetlayout = vulkDescriptors::create_descriptor_set_layout(vulkcomp.device);
-		vulkcomp.descriptorpool = vulkDescriptors::create_descriptor_pool(vulkcomp.device);
-		vulkcomp.descriptorset = vulkDescriptors::create_descriptor_set(vulkcomp.device, vulkcomp.descriptorsetlayout, vulkcomp.descriptorpool);
+		vulkcomp.maindescriptorsetlayout = vulkDescriptors::create_descriptor_set_layout(vulkcomp.device, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
-		vulkcomp.layout = vulkGraphicsPipeline::CreatePipelineLayout(vulkcomp.device, vulkcomp.descriptorsetlayout);
-		auto vertShaderCode = vulkShaderModule::readFile("res/Shaders/vert.spv");
-		auto fragShaderCode = vulkShaderModule::readFile("res/Shaders/frag.spv");
-		vertshadermodule = vulkShaderModule::createShaderModule(vertShaderCode, vulkcomp.device);
-		fragshadermodule = vulkShaderModule::createShaderModule(fragShaderCode, vulkcomp.device);
-		vulkcomp.pipeline = vulkGraphicsPipeline::CreateGraphicsPipeline(vulkcomp.device, vulkcomp.layout, vertshadermodule, fragshadermodule, swapchainvariables.format);
+		vulkcomp.descriptorpool = vulkDescriptors::create_descriptor_pool(vulkcomp.device);
+		vulkcomp.descriptorset = vulkDescriptors::create_descriptor_set(vulkcomp.device, vulkcomp.maindescriptorsetlayout, vulkcomp.descriptorpool);
+
+		// Graphics Pipelines
+		vulkcomp.mainlayout = vulkGraphicsPipeline::CreatePipelineLayout(vulkcomp, VK_TRUE, static_cast<uint32_t>(sizeof(GPUDrawPushConstants)));
+		auto mainvertShaderCode = vulkShaderModule::readFile("res/Shaders/vert.spv");
+		auto mainfragShaderCode = vulkShaderModule::readFile("res/Shaders/frag.spv");
+		mainvertshadermodule = vulkShaderModule::createShaderModule(mainvertShaderCode, vulkcomp.device);
+		mainfragshadermodule = vulkShaderModule::createShaderModule(mainfragShaderCode, vulkcomp.device);
+		vulkcomp.mainpipeline = vulkGraphicsPipeline::CreateGraphicsPipeline(
+			vulkcomp.device, 
+			vulkcomp.mainlayout, 
+			mainvertshadermodule, 
+			mainfragshadermodule, 
+			swapchainvariables.format,
+			VK_TRUE,
+			VK_FALSE,
+			VK_BLEND_FACTOR_ONE,
+			VK_BLEND_FACTOR_ZERO
+		);
+
+		vulkcomp.gridlayout = vulkGraphicsPipeline::CreatePipelineLayout(vulkcomp, VK_FALSE, static_cast<uint32_t>(sizeof(GridPushConstants)));
+		auto gridvertShaderCode = vulkShaderModule::readFile("res/Shaders/grid.vert.spv");
+		auto gridfragShaderCode = vulkShaderModule::readFile("res/Shaders/grid.frag.spv");
+		gridvertshadermodule = vulkShaderModule::createShaderModule(gridvertShaderCode, vulkcomp.device);
+		gridfragshadermodule = vulkShaderModule::createShaderModule(gridfragShaderCode, vulkcomp.device);
+		vulkcomp.gridpipeline = vulkGraphicsPipeline::CreateGraphicsPipeline(
+			vulkcomp.device, 
+			vulkcomp.gridlayout, 
+			gridvertshadermodule, 
+			gridfragshadermodule, 
+			swapchainvariables.format,
+			VK_FALSE,
+			VK_TRUE,
+			VK_BLEND_FACTOR_SRC_ALPHA,
+			VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA
+		);
+		///
 
 		vulkcomp.commandpool = vulkRendering::createCommandPool(vulkcomp.device, indices.graphicsFamily.value());
 
@@ -112,15 +145,20 @@ namespace vulkBackend {
 
 		vulkBuffer::destory_sampler(vulkcomp.device, vulkcomp.defaulttexturesampler);
 
-		vulkDescriptors::destroy_all_descriptor_components(vulkcomp.device, vulkcomp.descriptorpool, vulkcomp.descriptorsetlayout);
+		vulkDescriptors::destroy_all_descriptor_components(vulkcomp.device, vulkcomp.descriptorpool, vulkcomp.maindescriptorsetlayout);
 
 		vkDestroyBuffer(vulkcomp.device, vulkcomp.vertexbuffer, nullptr);
 		vkFreeMemory(vulkcomp.device, vulkcomp.vertexbuffermemory, nullptr);
 
-		vkDestroyPipeline(vulkcomp.device, vulkcomp.pipeline, nullptr);
-		vkDestroyShaderModule(vulkcomp.device, fragshadermodule, nullptr);
-		vkDestroyShaderModule(vulkcomp.device, vertshadermodule, nullptr);
-		vkDestroyPipelineLayout(vulkcomp.device, vulkcomp.layout, nullptr);
+		vkDestroyPipeline(vulkcomp.device, vulkcomp.mainpipeline, nullptr);
+		vkDestroyShaderModule(vulkcomp.device, mainfragshadermodule, nullptr);
+		vkDestroyShaderModule(vulkcomp.device, mainvertshadermodule, nullptr);
+		vkDestroyPipelineLayout(vulkcomp.device, vulkcomp.mainlayout, nullptr);
+
+		vkDestroyPipeline(vulkcomp.device, vulkcomp.gridpipeline, nullptr);
+		vkDestroyShaderModule(vulkcomp.device, gridfragshadermodule, nullptr);
+		vkDestroyShaderModule(vulkcomp.device, gridvertshadermodule, nullptr);
+		vkDestroyPipelineLayout(vulkcomp.device, vulkcomp.gridlayout, nullptr);
 
 		for (auto imageView : vulkcomp.imageViews) {
 			vkDestroyImageView(vulkcomp.device, imageView, nullptr);

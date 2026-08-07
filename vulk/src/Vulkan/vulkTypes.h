@@ -72,10 +72,13 @@ struct VulkComponents {
     SwapchainVariables swapchainvariables;
     std::vector<VkImageView> imageViews;
 
-    VkPipeline pipeline = VK_NULL_HANDLE;
-    VkPipelineLayout layout = VK_NULL_HANDLE;
+    VkPipeline mainpipeline = VK_NULL_HANDLE;
+    VkPipelineLayout mainlayout = VK_NULL_HANDLE;
+    VkPipeline gridpipeline = VK_NULL_HANDLE;
+    VkPipelineLayout gridlayout = VK_NULL_HANDLE;
 
-    VkDescriptorSetLayout descriptorsetlayout;
+
+    VkDescriptorSetLayout maindescriptorsetlayout;
     VkDescriptorPool descriptorpool;
     VkDescriptorSet descriptorset;
 

@@ -88,8 +88,6 @@ namespace Renderer {
 
         vkCmdBeginRendering(vulkcomp.commandBuffers[vulkcomp.currentFrame], &renderingInfo);
 
-        vkCmdBindPipeline(vulkcomp.commandBuffers[vulkcomp.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vulkcomp.pipeline);
-
         VkViewport viewport{};
         viewport.x = 0.0f;
         viewport.y = 0.0f;
@@ -111,7 +109,8 @@ namespace Renderer {
 
         AssetHandler::syncpendingobjects();
 
-        vkCmdBindDescriptorSets(vulkcomp.commandBuffers[vulkcomp.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vulkcomp.layout, 0, 1, &vulkcomp.descriptorset, 0, nullptr);
+        vkCmdBindPipeline(vulkcomp.commandBuffers[vulkcomp.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vulkcomp.mainpipeline);
+        vkCmdBindDescriptorSets(vulkcomp.commandBuffers[vulkcomp.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vulkcomp.mainlayout, 0, 1, &vulkcomp.descriptorset, 0, nullptr);
 
         for (size_t i = 0; i < Renderer::m_drawlist.size(); ++i) {
             const auto& obj = Renderer::m_drawlist[i];
@@ -122,7 +121,7 @@ namespace Renderer {
             pushData.vertexBuffer = obj.vertexBufferAddress;
             pushData.textureIndex = obj.textureIndex;
 
-            vkCmdPushConstants(vulkcomp.commandBuffers[vulkcomp.currentFrame], vulkcomp.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushData);
+            vkCmdPushConstants(vulkcomp.commandBuffers[vulkcomp.currentFrame], vulkcomp.mainlayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(GPUDrawPushConstants), &pushData);
 
             vkCmdBindIndexBuffer(
                 vulkcomp.commandBuffers[vulkcomp.currentFrame],
@@ -140,6 +139,23 @@ namespace Renderer {
                 0
             );
         }
+
+        vkCmdBindPipeline(vulkcomp.commandBuffers[vulkcomp.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, vulkcomp.gridpipeline);
+
+        GridPushConstants pushData{};
+        pushData.viewproj = viewproj;
+        pushData.camerapos = CameraSystem::mainCamera.position;
+
+
+        vkCmdPushConstants(
+            vulkcomp.commandBuffers[vulkcomp.currentFrame],
+            vulkcomp.gridlayout,
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+            0, sizeof(GridPushConstants),
+            &pushData
+        );
+
+        vkCmdDraw(vulkcomp.commandBuffers[vulkcomp.currentFrame], 6, 1, 0, 0);
 
         AssetHandler::RenderImGui(vulkcomp, vulkcomp.commandBuffers[vulkcomp.currentFrame]);
 

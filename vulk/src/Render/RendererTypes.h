@@ -9,6 +9,11 @@ struct alignas(16) GPUDrawPushConstants {
     uint32_t textureIndex;
 };
 
+struct alignas(16) GridPushConstants {
+    glm::mat4 viewproj;
+    alignas(16) glm::vec3 camerapos;
+};
+
 struct Vertex {
     glm::vec3 pos;     
     float uv_x;         

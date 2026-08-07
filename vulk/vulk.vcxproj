@@ -79,6 +79,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\Shaders\compile.bat" />
+    <None Include="res\Shaders\grid.frag" />
+    <None Include="res\Shaders\grid.vert" />
     <None Include="res\Shaders\shader.frag" />
     <None Include="res\Shaders\shader.vert" />
   </ItemGroup>

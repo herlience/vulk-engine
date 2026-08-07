@@ -2,10 +2,10 @@
 #include "../vulkTypes.h"
 
 namespace vulkDescriptors {
-	VkDescriptorSetLayout create_descriptor_set_layout(VkDevice device) {
+	VkDescriptorSetLayout create_descriptor_set_layout(VkDevice device, VkDescriptorType layoutdescriptortype) {
 		VkDescriptorSetLayoutBinding layoutbinding{
 			.binding = 0,
-			.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+			.descriptorType = layoutdescriptortype,
 			.descriptorCount = 10000,
 			.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
 			.pImmutableSamplers = nullptr

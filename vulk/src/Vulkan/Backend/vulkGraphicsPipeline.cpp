@@ -7,7 +7,19 @@
 #include <iostream>
 
 namespace vulkGraphicsPipeline {
-    VkPipeline CreateGraphicsPipeline(VkDevice device, VkPipelineLayout pipelineLayout, VkShaderModule vertexShader, VkShaderModule fragmentShader, VkFormat swapchainFormat) {
+    VkPipeline CreateGraphicsPipeline(
+        VkDevice device, 
+        VkPipelineLayout pipelineLayout, 
+        VkShaderModule vertexShader, 
+        VkShaderModule fragmentShader, 
+        VkFormat swapchainFormat, 
+        VkBool32 dwe, 
+        VkBool32 be,
+        VkBlendFactor sCBF,
+        VkBlendFactor dCBF
+    ) {
+        assert(pipelineLayout != VK_NULL_HANDLE && "HATA: CreateGraphicsPipeline'a NULL PipelineLayout gönderildi!");
+
         VkPipelineShaderStageCreateInfo shaderStages[2] = {};
 
         // Vertex Shader Stage
@@ -56,7 +68,16 @@ namespace vulkGraphicsPipeline {
 
         VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
         colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        colorBlendAttachment.blendEnable = VK_FALSE;
+        colorBlendAttachment.blendEnable = be;
+        if (be == VK_TRUE) {
+            colorBlendAttachment.srcColorBlendFactor = sCBF;
+            colorBlendAttachment.dstColorBlendFactor = dCBF;
+            colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+
+            colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+            colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+            colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+        }
 
         VkPipelineColorBlendStateCreateInfo colorBlending = {};
         colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -86,7 +107,7 @@ namespace vulkGraphicsPipeline {
         VkPipelineDepthStencilStateCreateInfo depthStencil{};
         depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
         depthStencil.depthTestEnable = VK_TRUE;           
-        depthStencil.depthWriteEnable = VK_TRUE;           
+        depthStencil.depthWriteEnable = dwe;           
         depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;  
         depthStencil.depthBoundsTestEnable = VK_FALSE;
         depthStencil.stencilTestEnable = VK_FALSE;
@@ -125,21 +146,30 @@ namespace vulkGraphicsPipeline {
         vkDestroyPipeline(device, pipeline, nullptr);
     }
 
-    VkPipelineLayout CreatePipelineLayout(VkDevice device, VkDescriptorSetLayout descriptorlayout) {
+    VkPipelineLayout CreatePipelineLayout(const VulkComponents& vulkcomp, VkBool32 descsetlay, uint32_t pushConstantSize) {
         VkPushConstantRange push_constant;
         push_constant.offset = 0;
-        push_constant.size = sizeof(GPUDrawPushConstants);
-        push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        push_constant.size = pushConstantSize;
+        push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
         VkPipelineLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        layoutInfo.setLayoutCount = 1;
-        layoutInfo.pSetLayouts = &descriptorlayout;
+        
+        if (descsetlay == VK_TRUE) {
+            layoutInfo.setLayoutCount = 1;
+            layoutInfo.pSetLayouts = &vulkcomp.maindescriptorsetlayout;
+        }
+        else if (descsetlay == VK_FALSE) {
+            layoutInfo.setLayoutCount = 0;
+            layoutInfo.pSetLayouts = nullptr;
+        }
+        
+
         layoutInfo.pushConstantRangeCount = 1;
         layoutInfo.pPushConstantRanges = &push_constant;
 
         VkPipelineLayout pipelineLayout;
-        if (vkCreatePipelineLayout(device, &layoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+        if (vkCreatePipelineLayout(vulkcomp.device, &layoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
             std::cout << "Failed to create pipeline layout\n";
             return VK_NULL_HANDLE;
         }

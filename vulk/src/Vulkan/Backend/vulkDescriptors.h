@@ -3,7 +3,7 @@
 #include "../../AssetHandler/texturehandler.h"
 
 namespace vulkDescriptors {
-	VkDescriptorSetLayout create_descriptor_set_layout(VkDevice device);
+	VkDescriptorSetLayout create_descriptor_set_layout(VkDevice device, VkDescriptorType layoutdescriptortype);
 	VkDescriptorPool create_descriptor_pool(VkDevice device);
 	VkDescriptorSet create_descriptor_set(VkDevice device, VkDescriptorSetLayout layout, VkDescriptorPool pool);
 

@@ -189,5 +189,7 @@
     <None Include="res\Shaders\compile.bat">
       <Filter>Kaynak Dosyalar</Filter>
     </None>
+    <None Include="res\Shaders\grid.frag" />
+    <None Include="res\Shaders\grid.vert" />
   </ItemGroup>
 </Project>
